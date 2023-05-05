@@ -1,7 +1,7 @@
-import { Box } from "@chakra-ui/react";
+import { Container } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import Header from "~/components/Header";
 import { Comic_Neue } from "next/font/google";
+import Header from "~/components/Header";
 
 const comicNeue = Comic_Neue({
   weight: ["300", "400", "700"],
@@ -10,10 +10,10 @@ const comicNeue = Comic_Neue({
 
 const Layout: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
-    <Box as="main" sx={comicNeue.style}>
+    <Container as="main" maxW={"3xl"} sx={comicNeue.style}>
       <Header />
       {children}
-    </Box>
+    </Container>
   );
 };
 
