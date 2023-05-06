@@ -27,7 +27,6 @@ export const api = createTRPCNext<AppRouter>({
        * @see https://trpc.io/docs/data-transformers
        */
       transformer: superjson,
-
       /**
        * Links used to determine request flow from client to server.
        *

@@ -16,12 +16,20 @@ import {
 } from "@chakra-ui/react";
 
 import { MdOutlineAddBox } from "react-icons/md";
-import FileUpload from "./FileUpload";
 import { useState } from "react";
 import TagInput from "./TagInput";
+import { convertBase64 } from "~/utils/converter";
 
 const NewPostWizard: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [baseImage, setBaseImage] = useState<string | null>(null);
+  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const file = e.target.files[0];
+    const base64 = await convertBase64(file);
+    setBaseImage(base64 as string);
+  };
 
   const [tags, setTags] = useState<Array<string>>([]);
 
@@ -83,7 +91,21 @@ const NewPostWizard: React.FC = () => {
                   focusBorderColor="teal.400"
                 />
               </FormControl>
-              <FileUpload />
+              <FormControl mb={2} isRequired>
+                <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
+                  Image
+                </FormLabel>
+                <input
+                  type="file"
+                  required
+                  onChange={(e) => uploadImage(e)}
+                  accept="image/*"
+                  max={500000}
+                />
+                <FormHelperText fontSize={"md"}>
+                  Select a picture of your pet
+                </FormHelperText>
+              </FormControl>
               <TagInput
                 tags={tags.length ? tags : null}
                 onAdd={handleTagAdd}

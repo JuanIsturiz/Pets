@@ -1,18 +1,43 @@
-import { Box, Heading, Link, Text } from "@chakra-ui/react";
+import { AddIcon } from "@chakra-ui/icons";
+import { Box, Button, Center, Heading, Link, Text } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import NextLink from "next/link";
+import UserPet from "~/components/UserPet";
+import { api } from "~/utils/api";
 
-const pets: any[] = [];
+// todo add loading skeleton
 
 const UserPets: NextPage = () => {
+  const { data: pets, isLoading } = api.pet.getAll.useQuery(undefined, {
+    onError(err) {},
+  });
+
   return (
     <Box as={"main"} m={2}>
-      <Heading>Your Pets</Heading>
-      {pets.length ? (
-        <div />
+      <Heading mb={2}>Your Pets</Heading>
+      {pets?.length ? (
+        <Box>
+          <Box>
+            {pets.map((pet) => (
+              <UserPet key={pet.id} pet={pet} />
+            ))}
+          </Box>
+          <Center>
+            <NextLink href="/add">
+              <Button
+                size={"lg"}
+                colorScheme="teal"
+                variant={"ghost"}
+                rightIcon={<AddIcon />}
+              >
+                Add Another Pet
+              </Button>
+            </NextLink>
+          </Center>
+        </Box>
       ) : (
-        <>
-          <Text fontSize={"xl"} textAlign={"center"} mt={8}>
+        <Center>
+          <Text fontSize={"xl"} mt={8}>
             No pets added yet.{" "}
             <Link
               as={NextLink}
@@ -23,7 +48,7 @@ const UserPets: NextPage = () => {
               Click here to add a new pet!
             </Link>
           </Text>
-        </>
+        </Center>
       )}
     </Box>
   );

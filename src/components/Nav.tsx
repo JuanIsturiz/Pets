@@ -42,7 +42,7 @@ export default function Nav() {
           <LogoutButton />
         </>
       ) : (
-        <Button colorScheme="cyan" onClick={() => signIn()}>
+        <Button colorScheme="cyan" onClick={() => void signIn()}>
           Sign In
         </Button>
       )}
@@ -66,7 +66,7 @@ function LogoutButton() {
           <ModalHeader>Are you sure you want to log out?</ModalHeader>
           <ModalCloseButton />
           <ModalFooter>
-            <Button colorScheme="teal" mr={3} onClick={() => signOut()}>
+            <Button colorScheme="teal" mr={3} onClick={() => void signOut()}>
               Log Out
             </Button>
             <Button colorScheme="teal" onClick={onClose} variant="ghost">

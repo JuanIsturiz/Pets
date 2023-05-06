@@ -55,6 +55,8 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    pets          Pet[]
+    posts         Post[]
 }
 
 model VerificationToken {
@@ -63,4 +65,37 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Pet {
+    id       String   @id @default(cuid())
+    name     String
+    specie   String
+    image    String   @db.LongText
+    age      Int
+    birthday DateTime
+    genre    String
+    size     String
+    bio      String?
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId   String
+    posts    Post[]
+
+    @@index([userId])
+}
+
+model Post {
+    id          String  @id @default(cuid())
+    title       String
+    description String?
+    image       String
+    tags        String
+    petName     String
+    pet         Pet     @relation(fields: [petId], references: [id], onDelete: Cascade)
+    petId       String
+    user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId      String
+
+    @@index([petId])
+    @@index([userId])
 }

@@ -1,13 +1,12 @@
 import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { AiOutlineSearch } from "react-icons/ai";
 
-const SearchBar: React.FC = () => {
+const SearchBar = () => {
   return (
     <InputGroup>
-      <InputLeftElement
-        pointerEvents={"none"}
-        children={<AiOutlineSearch size={20} />}
-      />
+      <InputLeftElement pointerEvents={"none"}>
+        <AiOutlineSearch size={20} />
+      </InputLeftElement>
       <Input
         type="text"
         variant={"filled"}
