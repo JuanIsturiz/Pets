@@ -15,6 +15,7 @@ import {
   Spinner,
   Stack,
   Textarea,
+  useToast,
 } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
@@ -33,17 +34,21 @@ interface PetData {
   bio?: string | null;
   //todo favToys?: string[];
 }
-const UserPets: NextPage = () => {
+const Add: NextPage = () => {
   const { replace } = useRouter();
+  const toast = useToast();
 
-  const {
-    mutate: createPet,
-    isLoading,
-    isError,
-    error,
-  } = api.pet.create.useMutation({
+  const { mutate: createPet, isLoading } = api.pet.create.useMutation({
     onSuccess() {
-      replace("/user/pets");
+      toast({
+        title: "Pet created successfully!",
+        status: "success",
+        duration: 2000,
+      });
+
+      setTimeout(() => {
+        replace("/user/pets");
+      }, 2500);
     },
   });
   const [age, setAge] = useState(5);
@@ -241,4 +246,4 @@ const UserPets: NextPage = () => {
   );
 };
 
-export default UserPets;
+export default Add;

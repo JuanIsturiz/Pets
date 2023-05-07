@@ -13,17 +13,60 @@ import {
   useDisclosure,
   Button,
   Textarea,
+  Select,
+  Spinner,
+  useToast,
+  Link,
+  Center,
 } from "@chakra-ui/react";
+import NextLink from "next/link";
 
 import { MdOutlineAddBox } from "react-icons/md";
 import { useState } from "react";
 import TagInput from "./TagInput";
 import { convertBase64 } from "~/utils/converter";
+import { api } from "~/utils/api";
+import { signIn, useSession } from "next-auth/react";
+import { ChevronDownIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 
+interface INewPost {
+  title: string;
+  description: string | null;
+  image: string;
+  tags: string[] | undefined;
+  pet: {
+    id: string;
+    name: string;
+  };
+}
 const NewPostWizard: React.FC = () => {
+  const { data: session } = useSession();
+  const toast = useToast();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  const ctx = api.useContext();
+  const { data: pets, isLoading: petsLoading } = api.pet.getAll.useQuery(
+    undefined,
+    {
+      enabled: isOpen,
+    }
+  );
+  const { mutate: createPost, isLoading: createLoading } =
+    api.post.create.useMutation({
+      onSuccess() {
+        ctx.post.getAll.invalidate();
+        onClose();
+        toast({
+          title: "Post created successfully!",
+          status: "success",
+          duration: 3000,
+        });
+      },
+    });
+
   const [baseImage, setBaseImage] = useState<string | null>(null);
+
   const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
@@ -31,6 +74,7 @@ const NewPostWizard: React.FC = () => {
     setBaseImage(base64 as string);
   };
 
+  //tags logic
   const [tags, setTags] = useState<Array<string>>([]);
 
   const handleTagAdd = (tag: string) => {
@@ -41,16 +85,40 @@ const NewPostWizard: React.FC = () => {
     setTags((prev) => prev.filter((_tag, idx) => idx !== index));
   };
 
-  const [description, setDescription] = useState("");
-  const handleDescriptionChange = (e: React.FormEvent<HTMLTextAreaElement>) => {
-    const inputValue = e.currentTarget.value;
-    setDescription(inputValue);
+  const handleOpen = () => {
+    if (!session) {
+      signIn();
+    } else {
+      onOpen();
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!pets) return;
+    if (!baseImage) return;
+
+    const formData: any = Object.fromEntries(new FormData(e.currentTarget));
+
+    const pet = pets
+      ?.map((pet) => ({ id: pet.id, name: pet.name }))
+      .find((pet) => formData.pet === pet.id);
+    if (!pet) return;
+
+    const newPost: INewPost = {
+      title: formData.title,
+      description: formData.description || null,
+      image: baseImage,
+      pet,
+      tags: tags.length ? tags : undefined,
+    };
+    createPost(newPost);
   };
 
   return (
     <>
       <Button
-        onClick={onOpen}
+        onClick={handleOpen}
         variant={"ghost"}
         colorScheme="teal"
         py={1}
@@ -63,60 +131,114 @@ const NewPostWizard: React.FC = () => {
         onClose={() => {
           onClose();
           setTags([]);
+          setBaseImage(null);
         }}
         scrollBehavior={"outside"}
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Upload a new post!</ModalHeader>
+          <ModalHeader>New Post</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            <form>
-              <FormControl mb={2}>
-                <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
-                  Title
-                </FormLabel>
-                <Input type="text" focusBorderColor="teal.400" />
-                <FormHelperText>Type a title for your post</FormHelperText>
-              </FormControl>
-              <FormControl mb={2}>
-                <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
-                  Description
-                </FormLabel>
-                <Textarea
-                  value={description}
-                  onChange={handleDescriptionChange}
-                  placeholder="Type a description for your new post..."
-                  size="sm"
-                  focusBorderColor="teal.400"
+          {petsLoading && (
+            <ModalBody>
+              <Center>
+                <Spinner size={"xl"} color="teal.400" />
+              </Center>
+              <ModalFooter>
+                <Button colorScheme="teal" onClick={onClose}>
+                  Cancel
+                </Button>
+              </ModalFooter>
+            </ModalBody>
+          )}
+          {!pets?.length && !petsLoading && (
+            <ModalBody>
+              <Center>
+                <Link fontSize={"lg"} href={"/add"} as={NextLink}>
+                  No pets added yet. Please add a pet here <ExternalLinkIcon />
+                </Link>
+              </Center>
+              <ModalFooter>
+                <Button colorScheme="teal" onClick={onClose}>
+                  Cancel
+                </Button>
+              </ModalFooter>
+            </ModalBody>
+          )}
+          {pets?.length && !petsLoading && (
+            <form
+              onSubmit={handleSubmit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  return false;
+                }
+              }}
+            >
+              <ModalBody>
+                <FormControl mb={2} isRequired>
+                  <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
+                    Title
+                  </FormLabel>
+                  <Input type="text" focusBorderColor="teal.400" name="title" />
+                  <FormHelperText>Type a title for your post</FormHelperText>
+                </FormControl>
+                <FormControl mb={2}>
+                  <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
+                    Description
+                  </FormLabel>
+                  <Textarea
+                    placeholder="Type a description for your new post..."
+                    size="sm"
+                    focusBorderColor="teal.400"
+                    name="description"
+                  />
+                </FormControl>
+                <FormControl mb={2} isRequired>
+                  <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
+                    Image
+                  </FormLabel>
+                  <input
+                    type="file"
+                    required
+                    onChange={(e) => uploadImage(e)}
+                    accept="image/*"
+                    max={500000}
+                  />
+                  <FormHelperText fontSize={"md"}>
+                    Select a picture of your pet
+                  </FormHelperText>
+                </FormControl>
+                <TagInput
+                  tags={tags.length ? tags : null}
+                  onAdd={handleTagAdd}
+                  onDelete={handleTagDelete}
                 />
-              </FormControl>
-              <FormControl mb={2} isRequired>
-                <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
-                  Image
-                </FormLabel>
-                <input
-                  type="file"
-                  required
-                  onChange={(e) => uploadImage(e)}
-                  accept="image/*"
-                  max={500000}
-                />
-                <FormHelperText fontSize={"md"}>
-                  Select a picture of your pet
-                </FormHelperText>
-              </FormControl>
-              <TagInput
-                tags={tags.length ? tags : null}
-                onAdd={handleTagAdd}
-                onDelete={handleTagDelete}
-              />
-              {/* add pet select here */}
+                {/* add pet select here */}
+                <FormControl mb={2} isRequired>
+                  <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
+                    Pet
+                  </FormLabel>
+                  <Select
+                    placeholder="Select a pet"
+                    name="pet"
+                    icon={petsLoading ? <Spinner /> : <ChevronDownIcon />}
+                  >
+                    {pets?.map((pet) => (
+                      <option key={pet.id} value={pet.id}>
+                        {pet.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </ModalBody>
+              <ModalFooter>
+                <Button type="submit" colorScheme="teal">
+                  {createLoading ? <Spinner /> : "Post"}
+                </Button>
+              </ModalFooter>
             </form>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="teal">Post</Button>
-          </ModalFooter>
+          )}
         </ModalContent>
       </Modal>
     </>

@@ -19,8 +19,13 @@ const TagInput: React.FC<TagInputProps> = ({ tags, onDelete, onAdd }) => {
   const [value, setValue] = useState("");
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return;
-    if (!value) return;
-    onAdd(value.replace(" ", "_").trim());
+    const purged = value
+      .trim()
+      .replace(" ", "_")
+      .replaceAll("#", "")
+      .replaceAll("~", "");
+    if (!purged) return;
+    onAdd(purged);
     setValue("");
   };
 
@@ -33,7 +38,9 @@ const TagInput: React.FC<TagInputProps> = ({ tags, onDelete, onAdd }) => {
         value={value}
         type="text"
         onKeyDown={handleKeyDown}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+        }}
         mb={2}
         focusBorderColor="teal.400"
       />
@@ -48,7 +55,7 @@ const TagInput: React.FC<TagInputProps> = ({ tags, onDelete, onAdd }) => {
             colorScheme="teal"
             onClick={() => onDelete(idx)}
           >
-            <TagLabel>{tag}</TagLabel>
+            <TagLabel>#{tag}</TagLabel>
             <TagCloseButton />
           </Tag>
         ))}

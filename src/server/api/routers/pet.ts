@@ -6,7 +6,12 @@ export const petRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.session?.user.id;
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
-    return await ctx.prisma.pet.findMany({ where: { userId } });
+    return await ctx.prisma.pet.findMany({
+      where: { userId },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   }),
   create: publicProcedure
     .input(

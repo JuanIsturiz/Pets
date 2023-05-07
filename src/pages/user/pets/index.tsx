@@ -2,20 +2,18 @@ import { AddIcon } from "@chakra-ui/icons";
 import { Box, Button, Center, Heading, Link, Text } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import NextLink from "next/link";
+import LoadingPet from "~/components/LoadingPet";
 import UserPet from "~/components/UserPet";
 import { api } from "~/utils/api";
 
-// todo add loading skeleton
-
 const UserPets: NextPage = () => {
-  const { data: pets, isLoading } = api.pet.getAll.useQuery(undefined, {
-    onError(err) {},
-  });
+  const { data: pets, isLoading } = api.pet.getAll.useQuery();
 
   return (
     <Box as={"main"} m={2}>
       <Heading mb={2}>Your Pets</Heading>
-      {pets?.length ? (
+      {isLoading && <LoadingPet />}
+      {!isLoading && pets?.length ? (
         <Box>
           <Box>
             {pets.map((pet) => (

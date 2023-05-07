@@ -63,38 +63,45 @@ model VerificationToken {
     identifier String
     token      String   @unique
     expires    DateTime
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
 
     @@unique([identifier, token])
 }
 
 model Pet {
-    id       String   @id @default(cuid())
-    name     String
-    specie   String
-    image    String   @db.LongText
-    age      Int
-    birthday DateTime
-    genre    String
-    size     String
-    bio      String?
-    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId   String
-    posts    Post[]
+    id        String   @id @default(cuid())
+    name      String
+    specie    String
+    image     String   @db.LongText
+    age       Int
+    birthday  DateTime
+    genre     String
+    size      String
+    bio       String?
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    posts     Post[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@index([userId])
 }
 
 model Post {
-    id          String  @id @default(cuid())
+    id          String   @id @default(cuid())
     title       String
     description String?
-    image       String
-    tags        String
+    image       String   @db.LongText
+    tags        String?
     petName     String
-    pet         Pet     @relation(fields: [petId], references: [id], onDelete: Cascade)
+    likes       Int      @default(0)
+    pet         Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
     petId       String
-    user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId      String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     @@index([petId])
     @@index([userId])

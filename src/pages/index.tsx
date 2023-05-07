@@ -1,10 +1,14 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Container, Flex, Text } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import NewPostWizard from "~/components/NewPostWizard";
+import Post from "~/components/Post";
 import SearchBar from "~/components/SearchBar";
+import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
+  const { data: posts } = api.post.getAll.useQuery();
+
   return (
     <>
       <Head>
@@ -13,11 +17,17 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box as={"main"} mx={2} my={4}>
-        <Flex gap={4}>
+        <Flex gap={4} mb={4}>
           <SearchBar />
           <NewPostWizard />
         </Flex>
-        <Text>Posts goes here...</Text>
+        <Container maxW="lg">
+          {!posts?.length ? (
+            <Text fontSize={"2xl"}>no posts to show</Text>
+          ) : (
+            posts.map((post) => <Post key={post.id} post={post} />)
+          )}
+        </Container>
       </Box>
     </>
   );

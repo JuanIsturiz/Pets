@@ -9,6 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spinner,
   Text,
   Tooltip,
   useColorMode,
@@ -18,13 +19,17 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { FiLogOut } from "react-icons/fi";
 import { FaSun, FaMoon } from "react-icons/fa";
 import Link from "next/link";
+import { ArrowForwardIcon } from "@chakra-ui/icons";
 
 export default function Nav() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { colorMode, toggleColorMode } = useColorMode();
   return (
     <HStack spacing={4}>
-      {session ? (
+      {status === "loading" && (
+        <Spinner color="teal.400" size={"lg"} thickness="3px" />
+      )}
+      {status !== "loading" && session && (
         <>
           <Tooltip label="Go to your pets" placement="left-start">
             <Link href={"/user/pets"}>
@@ -41,8 +46,13 @@ export default function Nav() {
           </Tooltip>
           <LogoutButton />
         </>
-      ) : (
-        <Button colorScheme="cyan" onClick={() => void signIn()}>
+      )}
+      {status !== "loading" && !session && (
+        <Button
+          colorScheme="teal"
+          rightIcon={<ArrowForwardIcon />}
+          onClick={() => void signIn()}
+        >
           Sign In
         </Button>
       )}

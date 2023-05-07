@@ -25,6 +25,7 @@
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
     "@uploadthing/react": "^2.0.1",
+    "dayjs": "^1.11.7",
     "framer-motion": "^10.12.7",
     "js-base64": "^3.7.5",
     "next": "^13.2.4",
