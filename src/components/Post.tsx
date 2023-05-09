@@ -8,11 +8,14 @@ import {
   Divider,
   Fade,
   HStack,
+  Icon,
   Image,
   Link,
+  Skeleton,
   StackItem,
   Text,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { RouterOutputs, api } from "~/utils/api";
 import NextLink from "next/link";
@@ -21,6 +24,9 @@ import NewCommentWizard from "./NewCommentWizard";
 import { Fragment } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { useSession } from "next-auth/react";
+
 dayjs.extend(relativeTime);
 
 type Post = RouterOutputs["post"]["getAll"][number];
@@ -28,7 +34,10 @@ type Post = RouterOutputs["post"]["getAll"][number];
 // todo add profile page, likes
 
 const Post: React.FC<{ post: Post }> = ({ post }) => {
-  const { id, title, description, image, tags, author, createdAt } = post;
+  const { id, title, description, image, tags, author, createdAt, likedBy } =
+    post;
+  const toast = useToast();
+  const { data: session } = useSession();
 
   const ctx = api.useContext();
 
@@ -36,6 +45,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     data: comments,
     refetch,
     isFetched,
+    isFetching,
   } = api.comment.getAll.useQuery(
     { postId: id },
     {
@@ -43,12 +53,51 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     }
   );
 
+  const { mutate: likePost, isLoading: loadingLike } =
+    api.post.like.useMutation({
+      onMutate() {
+        if (!session?.user) return;
+        ctx.post.getAll.cancel();
+        const previousPosts = ctx.post.getAll.getData();
+        ctx.post.getAll.setData(undefined, (old) => {
+          return old?.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  likedBy: isLiked
+                    ? likedBy.filter((u) => u.id !== session.user.id)
+                    : [...likedBy, session.user],
+                }
+              : p
+          );
+        });
+        return { previousPosts };
+      },
+      onError(err, _newPosts, context) {
+        ctx.post.getAll.setData(undefined, context?.previousPosts);
+        toast({
+          status: "error",
+          title: err.message,
+        });
+      },
+    });
+
+  const isLiked = likedBy.some((user) => user.id === session?.user.id);
+
   const handleComments = () => {
     if (isFetched) {
       ctx.comment.getAll.reset({ postId: id });
     } else {
       refetch();
     }
+  };
+
+  const handleLike = () => {
+    if (loadingLike) return;
+    likePost({
+      postId: id,
+      action: isLiked,
+    });
   };
 
   return (
@@ -77,8 +126,19 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
             objectFit={"cover"}
             rounded={"md"}
             mb={2}
+            onDoubleClick={handleLike}
+            cursor={"pointer"}
           />
-          <Text fontSize={"lg"}>20 likes</Text>
+          <HStack>
+            <Icon
+              as={isLiked ? AiFillHeart : AiOutlineHeart}
+              boxSize={6}
+              color={isLiked ? "red.400" : "gray.200"}
+              onClick={handleLike}
+              cursor={"pointer"}
+            />
+            <Text fontSize={"lg"}>{likedBy.length} likes</Text>
+          </HStack>
           <HStack>
             <Text fontSize={"lg"} fontWeight={"semibold"}>
               {author.name}
@@ -107,8 +167,15 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
           >
             Load Comments
           </Text>
+          {isFetching &&
+            Array(3)
+              .fill(null)
+              .map((_skeleton, idx) => (
+                <Skeleton key={idx} h={38} rounded={"md"} mb={2} />
+              ))}
           <VStack mb={2} alignItems={"flex-start"} spacing={0}>
-            {comments?.length &&
+            {!isFetching &&
+              comments?.length &&
               comments?.map((comment) => (
                 <Fragment key={comment.id}>
                   <Comment
@@ -119,12 +186,12 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                   <Divider />
                 </Fragment>
               ))}
-            {!comments?.length && isFetched && (
-              <Center>
-                <Text>No comments found</Text>
-              </Center>
-            )}
           </VStack>
+          {!comments?.length && isFetched && (
+            <Center>
+              <Text>No comments found</Text>
+            </Center>
+          )}
           <NewCommentWizard
             postId={id}
             authorName={author.name}

@@ -11,6 +11,11 @@ export const postRouter = createTRPCRouter({
             image: true,
           },
         },
+        likedBy: {
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -40,5 +45,28 @@ export const postRouter = createTRPCRouter({
         },
       });
       return true;
+    }),
+  like: privateProcedure
+    .input(
+      z.object({
+        postId: z.string().cuid(),
+        action: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      const action = input.action ? "disconnect" : "connect";
+
+      await ctx.prisma.post.update({
+        where: { id: input.postId },
+        data: {
+          likedBy: {
+            [action]: {
+              id: userId,
+            },
+          },
+        },
+      });
     }),
 });
