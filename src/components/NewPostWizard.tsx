@@ -34,10 +34,7 @@ interface INewPost {
   description: string | null;
   image: string;
   tags: string[] | undefined;
-  pet: {
-    id: string;
-    name: string;
-  };
+  petId: string;
 }
 const NewPostWizard: React.FC = () => {
   const { data: session } = useSession();
@@ -56,7 +53,7 @@ const NewPostWizard: React.FC = () => {
     api.post.create.useMutation({
       onSuccess() {
         ctx.post.getAll.invalidate();
-        onClose();
+        void onClose();
         toast({
           title: "Post created successfully!",
           status: "success",
@@ -87,7 +84,7 @@ const NewPostWizard: React.FC = () => {
 
   const handleOpen = () => {
     if (!session) {
-      signIn();
+      void signIn();
     } else {
       onOpen();
     }
@@ -100,16 +97,11 @@ const NewPostWizard: React.FC = () => {
 
     const formData: any = Object.fromEntries(new FormData(e.currentTarget));
 
-    const pet = pets
-      ?.map((pet) => ({ id: pet.id, name: pet.name }))
-      .find((pet) => formData.pet === pet.id);
-    if (!pet) return;
-
     const newPost: INewPost = {
       title: formData.title,
       description: formData.description || null,
       image: baseImage,
-      pet,
+      petId: formData.petId,
       tags: tags.length ? tags : undefined,
     };
     createPost(newPost);
@@ -201,7 +193,7 @@ const NewPostWizard: React.FC = () => {
                   <input
                     type="file"
                     required
-                    onChange={(e) => uploadImage(e)}
+                    onChange={(e) => void uploadImage(e)}
                     accept="image/*"
                     max={500000}
                   />

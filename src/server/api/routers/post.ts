@@ -5,7 +5,7 @@ export const postRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.post.findMany({
       include: {
-        user: {
+        author: {
           select: {
             name: true,
             image: true,
@@ -24,10 +24,7 @@ export const postRouter = createTRPCRouter({
         description: z.string().nullable(),
         image: z.string(),
         tags: z.string().array().optional(),
-        pet: z.object({
-          id: z.string().cuid(),
-          name: z.string(),
-        }),
+        petId: z.string().cuid(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -38,8 +35,7 @@ export const postRouter = createTRPCRouter({
           description: input.description,
           image: input.image,
           tags: input.tags?.join("~"),
-          petName: input.pet.name,
-          petId: input.pet.id,
+          petId: input.petId,
           userId,
         },
       });
