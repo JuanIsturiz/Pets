@@ -7,7 +7,7 @@ import UserPet from "~/components/UserPet";
 import { api } from "~/utils/api";
 
 const UserPets: NextPage = () => {
-  const { data: pets, isLoading } = api.pet.getAll.useQuery();
+  const { data: pets, isLoading } = api.pet.getOwn.useQuery();
 
   return (
     <Box as={"main"} m={2}>

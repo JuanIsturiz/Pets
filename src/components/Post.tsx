@@ -111,7 +111,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
               borderColor={"teal.500"}
               size={"sm"}
             />
-            <Link href="/profile" as={NextLink}>
+            <Link href={`/@${author.name}`} as={NextLink}>
               {author.name}
             </Link>
           </HStack>
@@ -140,9 +140,14 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
             <Text fontSize={"lg"}>{likedBy.length} likes</Text>
           </HStack>
           <HStack>
-            <Text fontSize={"lg"} fontWeight={"semibold"}>
+            <Link
+              href={`/@${author.name}`}
+              as={NextLink}
+              fontSize={"lg"}
+              fontWeight={"semibold"}
+            >
               {author.name}
-            </Text>
+            </Link>
             <Text fontSize={"lg"}>{title}</Text>
           </HStack>
           <Text mb={2}>{description}</Text>

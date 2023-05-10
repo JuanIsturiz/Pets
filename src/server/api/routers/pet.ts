@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const petRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
+  getOwn: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.session?.user.id;
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
     return await ctx.prisma.pet.findMany({
@@ -13,6 +13,20 @@ export const petRouter = createTRPCRouter({
       },
     });
   }),
+  getByUserId: publicProcedure
+    .input(
+      z.object({
+        userId: z.string().cuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.prisma.pet.findMany({
+        where: { userId: input.userId },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
   create: publicProcedure
     .input(
       z.object({
