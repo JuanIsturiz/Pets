@@ -43,7 +43,7 @@ const NewPostWizard: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const ctx = api.useContext();
-  const { data: pets, isLoading: petsLoading } = api.pet.getAll.useQuery(
+  const { data: pets, isLoading: petsLoading } = api.pet.getOwn.useQuery(
     undefined,
     {
       enabled: isOpen,
@@ -104,6 +104,7 @@ const NewPostWizard: React.FC = () => {
       petId: formData.petId,
       tags: tags.length ? tags : undefined,
     };
+    console.log(newPost);
     createPost(newPost);
   };
 
@@ -206,14 +207,13 @@ const NewPostWizard: React.FC = () => {
                   onAdd={handleTagAdd}
                   onDelete={handleTagDelete}
                 />
-                {/* add pet select here */}
                 <FormControl mb={2} isRequired>
                   <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
                     Pet
                   </FormLabel>
                   <Select
                     placeholder="Select a pet"
-                    name="pet"
+                    name="petId"
                     icon={petsLoading ? <Spinner /> : <ChevronDownIcon />}
                   >
                     {pets?.map((pet) => (

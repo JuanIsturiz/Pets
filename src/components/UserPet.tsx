@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { RouterOutputs } from "~/utils/api";
 
-type Pet = RouterOutputs["pet"]["getAll"][number];
+type Pet = RouterOutputs["pet"]["getOwn"][number];
 
 const formatAge = (age: number) => {
   switch (age) {

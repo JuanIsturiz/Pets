@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export const postRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -97,5 +98,33 @@ export const postRouter = createTRPCRouter({
           },
         },
       });
+    }),
+  remove: privateProcedure
+    .input(
+      z.object({
+        postId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const post = await ctx.prisma.post.findUnique({
+        where: {
+          id: input.postId,
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      if (userId !== post?.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      await ctx.prisma.post.delete({
+        where: {
+          id: input.postId,
+        },
+      });
+      return true;
     }),
 });

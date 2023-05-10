@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Button,
   Card,
   CardBody,
   CardFooter,
@@ -15,7 +16,14 @@ import {
   StackItem,
   Text,
   VStack,
+  useDisclosure,
   useToast,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverArrow,
+  Spinner,
 } from "@chakra-ui/react";
 import { RouterOutputs, api } from "~/utils/api";
 import NextLink from "next/link";
@@ -26,16 +34,26 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { useSession } from "next-auth/react";
+import { BsThreeDots } from "react-icons/bs";
+import { DeleteIcon } from "@chakra-ui/icons";
+import { FiShare } from "react-icons/fi";
 
 dayjs.extend(relativeTime);
 
 type Post = RouterOutputs["post"]["getAll"][number];
 
-// todo add profile page, likes
-
 const Post: React.FC<{ post: Post }> = ({ post }) => {
-  const { id, title, description, image, tags, author, createdAt, likedBy } =
-    post;
+  const {
+    id,
+    title,
+    description,
+    image,
+    tags,
+    author,
+    createdAt,
+    likedBy,
+    userId,
+  } = post;
   const toast = useToast();
   const { data: session } = useSession();
 
@@ -82,6 +100,20 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
       },
     });
 
+  const { mutate: deletePost, isLoading: loadingDelete } =
+    api.post.remove.useMutation({
+      onSuccess() {
+        ctx.post.getAll.invalidate();
+        ctx.post.getByUserId.invalidate({ userId: session?.user.id });
+      },
+      onError(err) {
+        toast({
+          status: "error",
+          title: err.message,
+        });
+      },
+    });
+
   const isLiked = likedBy.some((user) => user.id === session?.user.id);
 
   const handleComments = () => {
@@ -100,9 +132,16 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     });
   };
 
+  const handleDelete = () => {
+    if (loadingDelete) return;
+    deletePost({
+      postId: id,
+    });
+  };
+
   return (
     <Fade in={true}>
-      <Card>
+      <Card mb={4} position={"relative"}>
         <CardHeader pb={0}>
           <HStack spacing={2}>
             <Avatar
@@ -114,6 +153,43 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
             <Link href={`/@${author.name}`} as={NextLink}>
               {author.name}
             </Link>
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  position={"absolute"}
+                  size={"sm"}
+                  variant={"ghost"}
+                  top={5}
+                  right={6}
+                >
+                  <Icon as={BsThreeDots} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent w={"200px"}>
+                <PopoverArrow />
+                <PopoverBody>
+                  <VStack>
+                    <Button
+                      w={"100%"}
+                      colorScheme="teal"
+                      rightIcon={<Icon as={FiShare} />}
+                    >
+                      Share Post
+                    </Button>
+                    {userId === session?.user.id && (
+                      <Button
+                        w={"100%"}
+                        colorScheme="red"
+                        rightIcon={loadingDelete ? <Spinner /> : <DeleteIcon />}
+                        onClick={handleDelete}
+                      >
+                        Delete Post
+                      </Button>
+                    )}
+                  </VStack>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
           </HStack>
         </CardHeader>
         <CardBody>
