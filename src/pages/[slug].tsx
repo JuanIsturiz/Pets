@@ -17,7 +17,7 @@ import { useState } from "react";
 import LoadingPet from "~/components/LoadingPet";
 import LoadingUser from "~/components/LoadingUser";
 import Post from "~/components/Post";
-import UserPet from "~/components/UserPet";
+import UserPet from "~/components/Pet";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 

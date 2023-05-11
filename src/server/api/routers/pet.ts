@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const petRouter = createTRPCRouter({
@@ -8,6 +8,14 @@ export const petRouter = createTRPCRouter({
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
     return await ctx.prisma.pet.findMany({
       where: { userId },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.pet.findMany({
+      //todo include pet owner
       orderBy: {
         createdAt: "desc",
       },
@@ -52,6 +60,61 @@ export const petRouter = createTRPCRouter({
           ...input,
           userId,
           birthday: fixedDate,
+        },
+      });
+      return true;
+    }),
+  update: privateProcedure
+    .input(
+      z.object({
+        id: z.optional(z.string().cuid()),
+        name: z.optional(z.string()),
+        specie: z.optional(z.string()),
+        image: z.optional(z.string()),
+        age: z.optional(z.number()),
+        birthday: z.optional(z.string()),
+        genre: z.optional(z.enum(["male", "female"])),
+        size: z.optional(z.enum(["xs", "sm", "md", "lg", "xl"])),
+        bio: z.optional(z.string()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const id = input.id;
+      delete input.id;
+      await ctx.prisma.pet.update({
+        where: {
+          id,
+        },
+        data: {
+          ...input,
+        },
+      });
+      return true;
+    }),
+  remove: privateProcedure
+    .input(
+      z.object({
+        petId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const pet = await ctx.prisma.pet.findUnique({
+        where: {
+          id: input.petId,
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      if (userId !== pet?.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      await ctx.prisma.pet.delete({
+        where: {
+          id: input.petId,
         },
       });
       return true;

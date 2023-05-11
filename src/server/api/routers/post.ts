@@ -3,6 +3,16 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const postRouter = createTRPCRouter({
+  getOwn: publicProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session?.user.id;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await ctx.prisma.post.findMany({
+      where: { userId },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.post.findMany({
       include: {

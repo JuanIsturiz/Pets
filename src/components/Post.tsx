@@ -105,6 +105,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
       onSuccess() {
         ctx.post.getAll.invalidate();
         ctx.post.getByUserId.invalidate({ userId: session?.user.id });
+        ctx.post.getOwn.invalidate();
       },
       onError(err) {
         toast({

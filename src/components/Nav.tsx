@@ -31,8 +31,8 @@ export default function Nav() {
       )}
       {status !== "loading" && session && (
         <>
-          <Tooltip label="Go to your pets" placement="left-start">
-            <Link href={"/user/pets"}>
+          <Tooltip label="Go to your profile" placement="left-start">
+            <Link href={"/profile"}>
               <Box display={"flex"} alignItems={"center"} gap={2}>
                 <Avatar
                   borderWidth={"medium"}

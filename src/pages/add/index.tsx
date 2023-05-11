@@ -47,7 +47,7 @@ const Add: NextPage = () => {
       });
 
       setTimeout(() => {
-        replace("/user/pets");
+        replace("/profile");
       }, 2500);
     },
   });
