@@ -9,7 +9,6 @@ import {
   Heading,
   Select,
   Skeleton,
-  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { GetStaticProps, NextPage } from "next";
@@ -18,8 +17,8 @@ import LoadingPet from "~/components/LoadingPet";
 import LoadingUser from "~/components/LoadingUser";
 import Post from "~/components/Post";
 import UserPet from "~/components/Pet";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
+import LoadingPost from "~/components/LoadingPost";
 
 const Profile: NextPage<{ username: string }> = ({ username }) => {
   const [filter, setFilter] = useState("posts");
@@ -40,10 +39,9 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
   const { data: pets, isLoading: loadingPets } = api.pet.getByUserId.useQuery(
     { userId: user?.id ?? "" },
     {
-      enabled: filter === "pets",
+      enabled: filter === "pets" && !loadingUser,
     }
   );
-
   return (
     <Box my={4} mx={2}>
       {loadingUser && <LoadingUser />}
@@ -102,25 +100,32 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
       <Divider my={4} />
       {filter === "posts" && (
         <Container maxW="lg">
-          {!posts?.length ? (
-            <Text fontSize={"2xl"}>no posts to show</Text>
-          ) : (
-            posts?.map((post) => <Post key={post.id} post={post} />)
+          {loadingPosts && <LoadingPost quantity={2} />}
+          {!loadingPosts && posts?.length && (
+            <>
+              {posts?.map((post) => (
+                <Post key={post.id} post={post} />
+              ))}
+            </>
+          )}
+          {!loadingPosts && !posts?.length && (
+            <Center>
+              <Text fontSize={"2xl"}>User has no posts.</Text>
+            </Center>
           )}
         </Container>
       )}
       {filter === "pets" && (
         <Box>
-          {loadingPets && <LoadingPet />}
-          {!loadingPets && pets?.length ? (
-            <Box>
-              <Box>
-                {pets.map((pet) => (
-                  <UserPet key={pet.id} pet={pet} />
-                ))}
-              </Box>
-            </Box>
-          ) : (
+          {loadingPets && <LoadingPet quantity={3} />}
+          {!loadingPets && pets?.length && (
+            <>
+              {pets.map((pet) => (
+                <UserPet key={pet.id} pet={pet} />
+              ))}
+            </>
+          )}
+          {!loadingPets && !pets?.length && (
             <Center>
               <Text fontSize={"xl"} mt={8}>
                 User has no pets yet.

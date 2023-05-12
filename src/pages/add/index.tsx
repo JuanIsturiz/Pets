@@ -18,8 +18,9 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { type NextPage } from "next";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import { convertBase64 } from "~/utils/converter";
 
@@ -27,7 +28,6 @@ interface PetData {
   name: string;
   specie: string;
   image?: any;
-  age: number;
   birthday: Date;
   genre: string;
   size: string;
@@ -35,6 +35,12 @@ interface PetData {
   //todo favToys?: string[];
 }
 const Add: NextPage = () => {
+  const { status } = useSession();
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      signIn();
+    }
+  }, [status]);
   const { replace } = useRouter();
   const toast = useToast();
 
@@ -51,13 +57,9 @@ const Add: NextPage = () => {
       }, 2500);
     },
   });
-  const [age, setAge] = useState(5);
   const [genre, setGenre] = useState("male");
   const [size, setSize] = useState("sm");
   const [bio, setBio] = useState("");
-  const handleChange = (ageValue: number) => {
-    setAge(ageValue);
-  };
 
   const [baseImage, setBaseImage] = useState<string | null>(null);
 
@@ -76,7 +78,7 @@ const Add: NextPage = () => {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data: any = Object.fromEntries(new window.FormData(e.currentTarget));
-    createPet({ ...data, age: Number(data.age), image: baseImage });
+    createPet({ ...data, image: baseImage });
   };
 
   return (
@@ -130,30 +132,6 @@ const Add: NextPage = () => {
           <FormHelperText fontSize={"md"}>
             Select a picture of your pet
           </FormHelperText>
-        </FormControl>
-        {/* pet age */}
-        <FormControl mb={2} isRequired>
-          <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
-            Age
-          </FormLabel>
-          <Slider
-            name="age"
-            min={0}
-            max={50}
-            flex={1}
-            value={age}
-            colorScheme="teal"
-            focusThumbOnChange={false}
-            color={"black"}
-            onChange={handleChange}
-          >
-            <SliderTrack>
-              <SliderFilledTrack />
-            </SliderTrack>
-            <SliderThumb fontSize="sm" boxSize="32px">
-              {age}
-            </SliderThumb>
-          </Slider>
         </FormControl>
         {/* pet birthday */}
         <FormControl mb={2} isRequired>

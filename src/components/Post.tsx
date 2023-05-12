@@ -16,14 +16,14 @@ import {
   StackItem,
   Text,
   VStack,
-  useDisclosure,
-  useToast,
   Popover,
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
   PopoverArrow,
   Spinner,
+  ButtonGroup,
+  useToast,
 } from "@chakra-ui/react";
 import { RouterOutputs, api } from "~/utils/api";
 import NextLink from "next/link";
@@ -35,8 +35,9 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { useSession } from "next-auth/react";
 import { BsThreeDots } from "react-icons/bs";
-import { DeleteIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { FiShare } from "react-icons/fi";
+import EditPostModal from "./EditPostModal";
 
 dayjs.extend(relativeTime);
 
@@ -52,8 +53,9 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     author,
     createdAt,
     likedBy,
-    userId,
+    authorId,
   } = post;
+
   const toast = useToast();
   const { data: session } = useSession();
 
@@ -118,6 +120,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
   const isLiked = likedBy.some((user) => user.id === session?.user.id);
 
   const handleComments = () => {
+    //todo add alert to signin
     if (isFetched) {
       ctx.comment.getAll.reset({ postId: id });
     } else {
@@ -126,6 +129,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
   };
 
   const handleLike = () => {
+    //todo add alert to signin
     if (loadingLike) return;
     likePost({
       postId: id,
@@ -151,7 +155,12 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
               borderColor={"teal.500"}
               size={"sm"}
             />
-            <Link href={`/@${author.name}`} as={NextLink}>
+            <Link
+              href={
+                session?.user.id === authorId ? "/profile" : `/@${author.name}`
+              }
+              as={NextLink}
+            >
               {author.name}
             </Link>
             <Popover>
@@ -169,25 +178,33 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
               <PopoverContent w={"200px"}>
                 <PopoverArrow />
                 <PopoverBody>
-                  <VStack>
+                  <ButtonGroup orientation="vertical" w={"full"}>
                     <Button
-                      w={"100%"}
                       colorScheme="teal"
                       rightIcon={<Icon as={FiShare} />}
                     >
-                      Share Post
+                      Share
                     </Button>
-                    {userId === session?.user.id && (
-                      <Button
-                        w={"100%"}
-                        colorScheme="red"
-                        rightIcon={loadingDelete ? <Spinner /> : <DeleteIcon />}
-                        onClick={handleDelete}
-                      >
-                        Delete Post
-                      </Button>
+                    {authorId === session?.user.id && (
+                      <>
+                        <EditPostModal
+                          postId={id}
+                          postTitle={title}
+                          postDescription={description ?? ""}
+                          postTags={tags?.split("~")}
+                        />
+                        <Button
+                          colorScheme="red"
+                          rightIcon={
+                            loadingDelete ? <Spinner /> : <DeleteIcon />
+                          }
+                          onClick={handleDelete}
+                        >
+                          Post
+                        </Button>
+                      </>
                     )}
-                  </VStack>
+                  </ButtonGroup>
                 </PopoverBody>
               </PopoverContent>
             </Popover>

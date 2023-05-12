@@ -8,11 +8,13 @@ import {
   HStack,
   Heading,
   Link,
+  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { type NextPage } from "next";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import NextLink from "next/link";
+import { useEffect } from "react";
 import LoadingPet from "~/components/LoadingPet";
 import LoadingUser from "~/components/LoadingUser";
 import Pet from "~/components/Pet";
@@ -20,6 +22,13 @@ import { api } from "~/utils/api";
 
 const Profile: NextPage = () => {
   const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      signIn();
+    }
+  }, [status]);
+
   const { data: pets, isLoading: loadingPets } = api.pet.getOwn.useQuery();
   const { data: posts, isLoading: loadingPosts } = api.post.getOwn.useQuery();
 
@@ -40,15 +49,23 @@ const Profile: NextPage = () => {
             </Text>
             <HStack spacing={12}>
               <HStack>
-                <Text fontWeight={"bold"} fontSize={"xl"}>
-                  {posts?.length}
-                </Text>
+                {loadingPosts ? (
+                  <Spinner size={"sm"} />
+                ) : (
+                  <Text fontWeight={"bold"} fontSize={"xl"}>
+                    {posts?.length}
+                  </Text>
+                )}
                 <Text fontSize={"xl"}>posts</Text>
               </HStack>
               <HStack>
-                <Text fontWeight={"bold"} fontSize={"xl"}>
-                  {pets?.length}
-                </Text>
+                {loadingPets ? (
+                  <Spinner size={"sm"} />
+                ) : (
+                  <Text fontWeight={"bold"} fontSize={"xl"}>
+                    {pets?.length}
+                  </Text>
+                )}
                 <Text fontSize={"xl"}>pets</Text>
               </HStack>
             </HStack>
@@ -56,7 +73,7 @@ const Profile: NextPage = () => {
         </Flex>
       )}
       <Heading mb={2}>Your Pets</Heading>
-      {loadingPets && <LoadingPet />}
+      {loadingPets && <LoadingPet quantity={2} />}
       {!loadingPets && pets?.length ? (
         <Box>
           <Box>

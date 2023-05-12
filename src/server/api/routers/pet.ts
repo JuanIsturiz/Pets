@@ -7,7 +7,7 @@ export const petRouter = createTRPCRouter({
     const userId = ctx.session?.user.id;
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
     return await ctx.prisma.pet.findMany({
-      where: { userId },
+      where: { ownerId: userId },
       orderBy: {
         createdAt: "desc",
       },
@@ -29,7 +29,7 @@ export const petRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       return await ctx.prisma.pet.findMany({
-        where: { userId: input.userId },
+        where: { ownerId: input.userId },
         orderBy: {
           createdAt: "desc",
         },
@@ -41,7 +41,6 @@ export const petRouter = createTRPCRouter({
         name: z.string(),
         specie: z.string(),
         image: z.string(),
-        age: z.number(),
         birthday: z.string(),
         genre: z.enum(["male", "female"]),
         size: z.enum(["xs", "sm", "md", "lg", "xl"]),
@@ -58,7 +57,7 @@ export const petRouter = createTRPCRouter({
       await ctx.prisma.pet.create({
         data: {
           ...input,
-          userId,
+          ownerId: userId,
           birthday: fixedDate,
         },
       });
@@ -67,26 +66,17 @@ export const petRouter = createTRPCRouter({
   update: privateProcedure
     .input(
       z.object({
-        id: z.optional(z.string().cuid()),
-        name: z.optional(z.string()),
-        specie: z.optional(z.string()),
-        image: z.optional(z.string()),
-        age: z.optional(z.number()),
-        birthday: z.optional(z.string()),
-        genre: z.optional(z.enum(["male", "female"])),
-        size: z.optional(z.enum(["xs", "sm", "md", "lg", "xl"])),
-        bio: z.optional(z.string()),
+        id: z.string().cuid(),
+        bio: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const id = input.id;
-      delete input.id;
       await ctx.prisma.pet.update({
         where: {
-          id,
+          id: input.id,
         },
         data: {
-          ...input,
+          bio: input.bio,
         },
       });
       return true;
@@ -104,11 +94,11 @@ export const petRouter = createTRPCRouter({
           id: input.petId,
         },
         select: {
-          userId: true,
+          ownerId: true,
         },
       });
 
-      if (userId !== pet?.userId) {
+      if (userId !== pet?.ownerId) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
 

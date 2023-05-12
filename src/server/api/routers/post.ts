@@ -7,7 +7,7 @@ export const postRouter = createTRPCRouter({
     const userId = ctx.session?.user.id;
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
     return await ctx.prisma.post.findMany({
-      where: { userId },
+      where: { authorId: userId },
       orderBy: {
         createdAt: "desc",
       },
@@ -42,7 +42,7 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.prisma.post.findMany({
         where: {
-          userId: input.userId,
+          authorId: input.userId,
         },
         include: {
           author: {
@@ -68,7 +68,7 @@ export const postRouter = createTRPCRouter({
         title: z.string(),
         description: z.string().nullable(),
         image: z.string(),
-        tags: z.string().array().optional(),
+        tags: z.optional(z.string().array()),
         petId: z.string().cuid(),
       })
     )
@@ -81,7 +81,7 @@ export const postRouter = createTRPCRouter({
           image: input.image,
           tags: input.tags?.join("~"),
           petId: input.petId,
-          userId,
+          authorId: userId,
         },
       });
       return true;
@@ -109,6 +109,29 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
+  update: privateProcedure
+    .input(
+      z.object({
+        postId: z.string().cuid(),
+        title: z.optional(z.string()),
+        description: z.optional(z.string()),
+        tags: z.optional(z.string().array()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { postId, title, description, tags } = input;
+      await ctx.prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          title,
+          description,
+          tags: tags?.join("~"),
+        },
+      });
+      return true;
+    }),
   remove: privateProcedure
     .input(
       z.object({
@@ -122,11 +145,11 @@ export const postRouter = createTRPCRouter({
           id: input.postId,
         },
         select: {
-          userId: true,
+          authorId: true,
         },
       });
 
-      if (userId !== post?.userId) {
+      if (userId !== post?.authorId) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
 

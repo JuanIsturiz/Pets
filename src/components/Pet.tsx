@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { CheckIcon, CloseIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
   Card,
   CardBody,
@@ -16,20 +16,28 @@ import {
   PopoverContent,
   PopoverArrow,
   PopoverBody,
-  VStack,
   Spinner,
   useToast,
-  Link,
+  Tooltip,
+  Editable,
+  EditablePreview,
+  EditableTextarea,
+  ButtonGroup,
+  Box,
+  useEditableControls,
+  IconButton,
 } from "@chakra-ui/react";
+import { Age } from "age2";
 import { useSession } from "next-auth/react";
-import NextLink from "next/link";
+import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FiShare } from "react-icons/fi";
 import { RouterOutputs, api } from "~/utils/api";
 
 type Pet = RouterOutputs["pet"]["getOwn"][number];
 
-const formatAge = (age: number) => {
+const formatAge = (birthday: Date) => {
+  const age = new Age(birthday).value;
   switch (age) {
     case 0:
       return `Less than a year old`;
@@ -84,28 +92,12 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
           <PopoverContent w={"200px"}>
             <PopoverArrow />
             <PopoverBody>
-              <VStack>
-                <Button
-                  w={"100%"}
-                  colorScheme="teal"
-                  rightIcon={<Icon as={FiShare} />}
-                >
+              <ButtonGroup orientation="vertical" w={"full"}>
+                <Button colorScheme="teal" rightIcon={<Icon as={FiShare} />}>
                   Share
                 </Button>
-                {pet.userId === session?.user.id && (
-                  <Link as={NextLink} href={`/edit/pet/${pet.id}`} w={"100%"}>
-                    <Button
-                      w={"100%"}
-                      colorScheme="blue"
-                      rightIcon={<EditIcon />}
-                    >
-                      Edit
-                    </Button>
-                  </Link>
-                )}
-                {pet.userId === session?.user.id && (
+                {pet.ownerId === session?.user.id && (
                   <Button
-                    w={"100%"}
                     colorScheme="red"
                     rightIcon={loadingDelete ? <Spinner /> : <DeleteIcon />}
                     onClick={handleDelete}
@@ -113,7 +105,7 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                     Delete
                   </Button>
                 )}
-              </VStack>
+              </ButtonGroup>
             </PopoverBody>
           </PopoverContent>
         </Popover>
@@ -140,7 +132,7 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                   <Text textTransform={"capitalize"} fontWeight={"semibold"}>
                     age:
                   </Text>
-                  <Text>{formatAge(pet.age)}</Text>
+                  <Text>{formatAge(pet.birthday)}</Text>
                 </GridItem>
                 <GridItem>
                   <Text textTransform={"capitalize"} fontWeight={"semibold"}>
@@ -163,12 +155,95 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
               <Text textTransform={"capitalize"} fontWeight={"semibold"}>
                 bio:
               </Text>
-              <Text>{pet.bio}</Text>
+              {session?.user.id === pet.ownerId ? (
+                <Tooltip label="Click to edit" placement="bottom-start">
+                  <Box>
+                    <BioEditable petId={pet.id} defaultValue={pet.bio ?? ""} />
+                  </Box>
+                </Tooltip>
+              ) : (
+                <Text>{pet.bio}</Text>
+              )}
             </GridItem>
           </Grid>
         </CardBody>
       </Card>
     </Fade>
+  );
+};
+
+const BioEditable: React.FC<{ petId: string; defaultValue: string }> = ({
+  petId,
+  defaultValue,
+}) => {
+  const [bio, setBio] = useState(defaultValue);
+  const toast = useToast();
+
+  const { mutate: updatePet } = api.pet.update.useMutation({
+    onError(err) {
+      setBio(defaultValue);
+      toast({
+        status: "error",
+        title: err.message,
+      });
+    },
+  });
+
+  const handleSubmit = () => {
+    if (bio.trim() === defaultValue) return;
+    updatePet({
+      id: petId,
+      bio: bio.trim(),
+    });
+  };
+
+  return (
+    <Editable
+      defaultValue={defaultValue}
+      onSubmit={handleSubmit}
+      placeholder="Add pet bio here..."
+    >
+      <EditablePreview color={!bio ? "gray.500" : "white"} />
+      <EditableTextarea
+        p={1}
+        value={bio}
+        onChange={(e) => {
+          setBio(e.target.value);
+        }}
+      />
+      <SubmitEditable
+        onSubmit={handleSubmit}
+        onCancel={() => setBio(defaultValue)}
+      />
+    </Editable>
+  );
+};
+
+const SubmitEditable: React.FC<{
+  onSubmit: () => void;
+  onCancel: () => void;
+}> = ({ onSubmit, onCancel }) => {
+  const { isEditing, getSubmitButtonProps, getCancelButtonProps } =
+    useEditableControls();
+  return (
+    <>
+      {isEditing ? (
+        <ButtonGroup display={"flex"} justifyContent={"center"}>
+          <IconButton
+            aria-label="Submit"
+            icon={<CheckIcon />}
+            onClick={onSubmit}
+            {...getSubmitButtonProps()}
+          />
+          <IconButton
+            aria-label="Cancel"
+            icon={<CloseIcon />}
+            onClick={onCancel}
+            {...getCancelButtonProps()}
+          />
+        </ButtonGroup>
+      ) : null}
+    </>
   );
 };
 

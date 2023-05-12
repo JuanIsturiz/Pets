@@ -1,13 +1,14 @@
-import { Box, Container, Flex, Text } from "@chakra-ui/react";
+import { Box, Center, Container, Flex, Text } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import Head from "next/head";
+import LoadingPost from "~/components/LoadingPost";
 import NewPostWizard from "~/components/NewPostWizard";
 import Post from "~/components/Post";
 import SearchBar from "~/components/SearchBar";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const { data: posts } = api.post.getAll.useQuery();
+  const { data: posts, isLoading } = api.post.getAll.useQuery();
 
   return (
     <>
@@ -22,10 +23,18 @@ const Home: NextPage = () => {
           <NewPostWizard />
         </Flex>
         <Container maxW="lg">
-          {!posts?.length ? (
-            <Text fontSize={"2xl"}>no posts to show</Text>
-          ) : (
-            posts.map((post) => <Post key={post.id} post={post} />)
+          {isLoading && <LoadingPost quantity={2} />}
+          {!isLoading && posts?.length && (
+            <>
+              {posts?.map((post) => (
+                <Post key={post.id} post={post} />
+              ))}
+            </>
+          )}
+          {!isLoading && !posts?.length && (
+            <Center>
+              <Text fontSize={"2xl"}>User has no posts.</Text>
+            </Center>
           )}
         </Container>
       </Box>

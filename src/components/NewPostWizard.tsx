@@ -104,7 +104,6 @@ const NewPostWizard: React.FC = () => {
       petId: formData.petId,
       tags: tags.length ? tags : undefined,
     };
-    console.log(newPost);
     createPost(newPost);
   };
 

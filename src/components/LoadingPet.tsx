@@ -8,10 +8,10 @@ import {
   SkeletonText,
 } from "@chakra-ui/react";
 
-const LoadingPet = () => {
+const LoadingPet: React.FC<{ quantity: number }> = ({ quantity }) => {
   return (
     <>
-      {Array(3)
+      {Array(quantity)
         .fill(null)
         .map((_skeleton, idx) => (
           <ScaleFade key={idx} in={true} initialScale={0.9}>
