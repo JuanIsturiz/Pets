@@ -49,7 +49,7 @@ const NewPostWizard: React.FC = () => {
       enabled: isOpen,
     }
   );
-  const { mutate: createPost, isLoading: createLoading } =
+  const { mutate: createPost, isLoading: loadingPost } =
     api.post.create.useMutation({
       onSuccess() {
         ctx.post.getAll.invalidate();
@@ -225,7 +225,7 @@ const NewPostWizard: React.FC = () => {
               </ModalBody>
               <ModalFooter>
                 <Button type="submit" colorScheme="teal">
-                  {createLoading ? <Spinner /> : "Post"}
+                  {loadingPost ? <Spinner /> : "Post"}
                 </Button>
               </ModalFooter>
             </form>

@@ -8,6 +8,19 @@ export const postRouter = createTRPCRouter({
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
     return await ctx.prisma.post.findMany({
       where: { authorId: userId },
+      include: {
+        author: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        likedBy: {
+          select: {
+            id: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -62,6 +75,71 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
+  getByUsername: publicProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.prisma.post.findMany({
+        where: {
+          author: {
+            name: {
+              equals: input.username,
+            },
+          },
+        },
+        include: {
+          author: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+          likedBy: {
+            select: {
+              id: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+  getByTags: publicProcedure
+    .input(
+      z.object({
+        tag: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const posts = await ctx.prisma.post.findMany({
+        where: {
+          tags: {
+            search: input.tag,
+          },
+        },
+        include: {
+          author: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+          likedBy: {
+            select: {
+              id: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      return posts;
+    }),
   create: privateProcedure
     .input(
       z.object({
@@ -74,7 +152,7 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      await ctx.prisma.post.create({
+      const post = await ctx.prisma.post.create({
         data: {
           title: input.title,
           description: input.description,
@@ -84,7 +162,7 @@ export const postRouter = createTRPCRouter({
           authorId: userId,
         },
       });
-      return true;
+      return { id: post.id };
     }),
   like: privateProcedure
     .input(
