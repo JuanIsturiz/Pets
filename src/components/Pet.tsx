@@ -1,4 +1,4 @@
-import { CheckIcon, CloseIcon, DeleteIcon } from "@chakra-ui/icons";
+import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import {
   Card,
   CardBody,
@@ -33,44 +33,45 @@ import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FiShare } from "react-icons/fi";
 import { RouterOutputs, api } from "~/utils/api";
+import DeleteItemButton from "./DeleteItemButton";
+import { formatAge } from "~/utils/formatAge";
 
 type Pet = RouterOutputs["pet"]["getOwn"][number];
-
-const formatAge = (birthday: Date) => {
-  const age = new Age(birthday).value;
-  switch (age) {
-    case 0:
-      return `Less than a year old`;
-    case 1:
-      return `${age} year old.`;
-    default:
-      return `${age} years old.`;
-  }
-};
 
 const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
   const { data: session } = useSession();
   const toast = useToast();
   const ctx = api.useContext();
-  const { mutate: deletePet, isLoading: loadingDelete } =
-    api.pet.remove.useMutation({
-      onSuccess() {
-        ctx.pet.getAll.invalidate();
-        ctx.pet.getByUserId.invalidate({ userId: session?.user.id });
-        ctx.pet.getOwn.invalidate();
-      },
-      onError(err) {
-        toast({
-          status: "error",
-          title: err.message,
-        });
-      },
-    });
+  const {
+    mutate: deletePet,
+    isLoading: loadingDelete,
+    isSuccess,
+  } = api.pet.remove.useMutation({
+    onSuccess() {
+      ctx.pet.getAll.invalidate();
+      ctx.pet.getByUserId.invalidate({ userId: session?.user.id });
+      ctx.pet.getOwn.invalidate();
+    },
+    onError(err) {
+      toast({
+        status: "error",
+        title: err.message,
+      });
+    },
+  });
 
   const handleDelete = () => {
     if (loadingDelete) return;
     deletePet({
       petId: pet.id,
+    });
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(`http://localhost:3000/pet/${pet.id}`);
+    toast({
+      title: "Link copied to clipboard!",
+      status: "info",
     });
   };
 
@@ -93,17 +94,21 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
             <PopoverArrow />
             <PopoverBody>
               <ButtonGroup orientation="vertical" w={"full"}>
-                <Button colorScheme="teal" rightIcon={<Icon as={FiShare} />}>
+                <Button
+                  colorScheme="teal"
+                  rightIcon={<Icon as={FiShare} />}
+                  onClick={handleShare}
+                >
                   Share
                 </Button>
                 {pet.ownerId === session?.user.id && (
-                  <Button
-                    colorScheme="red"
-                    rightIcon={loadingDelete ? <Spinner /> : <DeleteIcon />}
-                    onClick={handleDelete}
-                  >
-                    Delete
-                  </Button>
+                  <DeleteItemButton
+                    onDelete={handleDelete}
+                    loading={loadingDelete}
+                    toDelete="Pet"
+                    info={pet.name}
+                    isSuccess={isSuccess}
+                  />
                 )}
               </ButtonGroup>
             </PopoverBody>

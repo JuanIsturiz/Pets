@@ -24,8 +24,8 @@ const NewCommentWizard: React.FC<NewCommentWizardProps> = ({
   const ctx = api.useContext();
 
   const { mutate, isLoading } = api.comment.create.useMutation({
-    onSuccess() {
-      ctx.comment.getAll.invalidate({ postId });
+    async onSuccess() {
+      await ctx.comment.getAll.invalidate({ postId });
       onRefetch();
       setText("");
     },
@@ -63,11 +63,12 @@ const NewCommentWizard: React.FC<NewCommentWizardProps> = ({
           onChange={(e) => setText(e.target.value)}
         />
         <InputRightElement
-          children={isLoading ? <Spinner /> : <AddIcon />}
           color={"teal.400"}
           _hover={{ cursor: "pointer" }}
           onClick={handleClick}
-        />
+        >
+          {isLoading ? <Spinner /> : <AddIcon />}
+        </InputRightElement>
       </InputGroup>
     </form>
   );

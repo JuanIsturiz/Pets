@@ -25,7 +25,7 @@ const Profile: NextPage = () => {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      signIn();
+      void signIn();
     }
   }, [status]);
 
@@ -82,7 +82,7 @@ const Profile: NextPage = () => {
             ))}
           </Box>
           <Center>
-            <NextLink href="/add">
+            <NextLink href="/pet/add">
               <Button
                 size={"lg"}
                 colorScheme="teal"
@@ -100,7 +100,7 @@ const Profile: NextPage = () => {
             No pets added yet.{" "}
             <Link
               as={NextLink}
-              href="/add"
+              href="/pet/add"
               color="teal.500"
               fontWeight={"semibold"}
             >

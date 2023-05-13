@@ -7,6 +7,8 @@ import Post from "~/components/Post";
 import SearchBar from "~/components/SearchBar";
 import { api } from "~/utils/api";
 
+// todo fix 0 from empty results
+
 const Home: NextPage = () => {
   const { data: posts, isLoading } = api.post.getAll.useQuery();
 

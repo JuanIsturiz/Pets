@@ -1,11 +1,4 @@
-import {
-  Avatar,
-  Box,
-  Flex,
-  HStack,
-  Skeleton,
-  SkeletonCircle,
-} from "@chakra-ui/react";
+import { Box, Flex, HStack, Skeleton, SkeletonCircle } from "@chakra-ui/react";
 
 const LoadingUser = () => {
   return (

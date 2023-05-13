@@ -5,7 +5,6 @@ import {
   CardFooter,
   CardHeader,
   Divider,
-  Fade,
   HStack,
   Icon,
   ScaleFade,

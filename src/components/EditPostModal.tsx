@@ -49,9 +49,9 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
         title: "Post updated successfully!",
       });
     },
-    onMutate() {
-      ctx.post.getAll.cancel();
-      ctx.post.getOwn.cancel();
+    async onMutate() {
+      await ctx.post.getAll.cancel();
+      await ctx.post.getOwn.cancel();
       const previousPosts = ctx.post.getAll.getData();
       ctx.post.getAll.setData(undefined, (old) => {
         return old?.map((p) =>

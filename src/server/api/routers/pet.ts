@@ -35,6 +35,26 @@ export const petRouter = createTRPCRouter({
         },
       });
     }),
+  getById: publicProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.prisma.pet.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          owner: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+    }),
   create: publicProcedure
     .input(
       z.object({

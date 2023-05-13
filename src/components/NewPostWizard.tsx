@@ -22,7 +22,7 @@ import {
 import NextLink from "next/link";
 
 import { MdOutlineAddBox } from "react-icons/md";
-import { useState } from "react";
+import React, { useState } from "react";
 import TagInput from "./TagInput";
 import { convertBase64 } from "~/utils/converter";
 import { api } from "~/utils/api";
@@ -51,8 +51,8 @@ const NewPostWizard: React.FC = () => {
   );
   const { mutate: createPost, isLoading: loadingPost } =
     api.post.create.useMutation({
-      onSuccess() {
-        ctx.post.getAll.invalidate();
+      async onSuccess() {
+        await ctx.post.getAll.invalidate();
         void onClose();
         toast({
           title: "Post created successfully!",
@@ -64,6 +64,11 @@ const NewPostWizard: React.FC = () => {
 
   const [baseImage, setBaseImage] = useState<string | null>(null);
 
+  const [petId, setPetId] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+
+  console.log(petId);
   const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
@@ -90,18 +95,19 @@ const NewPostWizard: React.FC = () => {
     }
   };
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    setPetId(e.target.value);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!pets) return;
     if (!baseImage) return;
 
-    const formData: any = Object.fromEntries(new FormData(e.currentTarget));
-
     const newPost: INewPost = {
-      title: formData.title,
-      description: formData.description || null,
+      title,
+      description,
       image: baseImage,
-      petId: formData.petId,
+      petId,
       tags: tags.length ? tags : undefined,
     };
     createPost(newPost);
@@ -146,7 +152,7 @@ const NewPostWizard: React.FC = () => {
           {!pets?.length && !petsLoading && (
             <ModalBody>
               <Center>
-                <Link fontSize={"lg"} href={"/add"} as={NextLink}>
+                <Link fontSize={"lg"} href={"/pet/add"} as={NextLink}>
                   No pets added yet. Please add a pet here <ExternalLinkIcon />
                 </Link>
               </Center>
@@ -172,7 +178,12 @@ const NewPostWizard: React.FC = () => {
                   <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
                     Title
                   </FormLabel>
-                  <Input type="text" focusBorderColor="teal.400" name="title" />
+                  <Input
+                    type="text"
+                    focusBorderColor="teal.400"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
                   <FormHelperText>Type a title for your post</FormHelperText>
                 </FormControl>
                 <FormControl mb={2}>
@@ -183,7 +194,8 @@ const NewPostWizard: React.FC = () => {
                     placeholder="Type a description for your new post..."
                     size="sm"
                     focusBorderColor="teal.400"
-                    name="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </FormControl>
                 <FormControl mb={2} isRequired>
@@ -214,6 +226,8 @@ const NewPostWizard: React.FC = () => {
                     placeholder="Select a pet"
                     name="petId"
                     icon={petsLoading ? <Spinner /> : <ChevronDownIcon />}
+                    value={petId}
+                    onChange={handleSelectChange}
                   >
                     {pets?.map((pet) => (
                       <option key={pet.id} value={pet.id}>

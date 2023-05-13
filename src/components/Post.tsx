@@ -21,7 +21,6 @@ import {
   PopoverContent,
   PopoverBody,
   PopoverArrow,
-  Spinner,
   ButtonGroup,
   useToast,
 } from "@chakra-ui/react";
@@ -35,9 +34,9 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { useSession } from "next-auth/react";
 import { BsThreeDots } from "react-icons/bs";
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { FiShare } from "react-icons/fi";
 import EditPostModal from "./EditPostModal";
+import DeleteItemButton from "./DeleteItemButton";
 
 dayjs.extend(relativeTime);
 
@@ -102,20 +101,23 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
       },
     });
 
-  const { mutate: deletePost, isLoading: loadingDelete } =
-    api.post.remove.useMutation({
-      onSuccess() {
-        ctx.post.getAll.invalidate();
-        ctx.post.getByUserId.invalidate({ userId: session?.user.id });
-        ctx.post.getOwn.invalidate();
-      },
-      onError(err) {
-        toast({
-          status: "error",
-          title: err.message,
-        });
-      },
-    });
+  const {
+    mutate: deletePost,
+    isLoading: loadingDelete,
+    isSuccess,
+  } = api.post.remove.useMutation({
+    onSuccess() {
+      ctx.post.getAll.invalidate();
+      ctx.post.getByUserId.invalidate({ userId: session?.user.id });
+      ctx.post.getOwn.invalidate();
+    },
+    onError(err) {
+      toast({
+        status: "error",
+        title: err.message,
+      });
+    },
+  });
 
   const isLiked = likedBy.some((user) => user.id === session?.user.id);
 
@@ -141,6 +143,14 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     if (loadingDelete) return;
     deletePost({
       postId: id,
+    });
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(`http://localhost:3000/post/${id}`);
+    toast({
+      title: "Link copied to clipboard!",
+      status: "info",
     });
   };
 
@@ -182,6 +192,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                     <Button
                       colorScheme="teal"
                       rightIcon={<Icon as={FiShare} />}
+                      onClick={handleShare}
                     >
                       Share
                     </Button>
@@ -193,15 +204,12 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                           postDescription={description ?? ""}
                           postTags={tags?.split("~")}
                         />
-                        <Button
-                          colorScheme="red"
-                          rightIcon={
-                            loadingDelete ? <Spinner /> : <DeleteIcon />
-                          }
-                          onClick={handleDelete}
-                        >
-                          Post
-                        </Button>
+                        <DeleteItemButton
+                          onDelete={handleDelete}
+                          loading={loadingDelete}
+                          toDelete="Post"
+                          isSuccess={isSuccess}
+                        />
                       </>
                     )}
                   </ButtonGroup>
