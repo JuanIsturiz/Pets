@@ -40,7 +40,12 @@ export default function Nav() {
                   name={session.user.name ?? ""}
                   src={session.user.image ?? ""}
                 />
-                <Text fontWeight={"semibold"}>{session.user.name ?? ""}</Text>
+                <Text
+                  display={{ base: "none", md: "block" }}
+                  fontWeight={"semibold"}
+                >
+                  {session.user.name ?? ""}
+                </Text>
               </Box>
             </Link>
           </Tooltip>

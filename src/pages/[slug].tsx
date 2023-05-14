@@ -11,7 +11,7 @@ import {
   Skeleton,
   Text,
 } from "@chakra-ui/react";
-import { GetStaticProps, NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import { useState } from "react";
 import LoadingPet from "~/components/LoadingPet";
 import LoadingUser from "~/components/LoadingUser";
@@ -19,6 +19,7 @@ import Post from "~/components/Post";
 import UserPet from "~/components/Pet";
 import { api } from "~/utils/api";
 import LoadingPost from "~/components/LoadingPost";
+import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 
 const Profile: NextPage<{ username: string }> = ({ username }) => {
   const [filter, setFilter] = useState("posts");
@@ -139,18 +140,18 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 };
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  // const ssg = generateSSGHelper();
+  const ssg = generateSSGHelper();
   const slug = context.params?.slug;
 
   if (typeof slug !== "string") throw new Error("no slug");
 
   const username = slug.replace("@", "");
 
-  // await ssg.profile.getByUsername.prefetch({ username });
+  await ssg.profile.getByUsername.prefetch({ username });
 
   return {
     props: {
-      // trpcState: ssg.dehydrate(),
+      trpcState: ssg.dehydrate(),
       username,
     },
   };

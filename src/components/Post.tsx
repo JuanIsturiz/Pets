@@ -23,8 +23,9 @@ import {
   PopoverArrow,
   ButtonGroup,
   useToast,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import NextLink from "next/link";
 import Comment from "./Comment";
 import NewCommentWizard from "./NewCommentWizard";
@@ -37,6 +38,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { FiShare } from "react-icons/fi";
 import EditPostModal from "./EditPostModal";
 import DeleteItemButton from "./DeleteItemButton";
+import { InfoOutlineIcon } from "@chakra-ui/icons";
 
 dayjs.extend(relativeTime);
 
@@ -56,6 +58,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
   } = post;
 
   const toast = useToast();
+  const { onClose } = useDisclosure();
   const { data: session } = useSession();
 
   const ctx = api.useContext();
@@ -74,9 +77,9 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
 
   const { mutate: likePost, isLoading: loadingLike } =
     api.post.like.useMutation({
-      onMutate() {
+      async onMutate() {
         if (!session?.user) return;
-        ctx.post.getAll.cancel();
+        await ctx.post.getAll.cancel();
         const previousPosts = ctx.post.getAll.getData();
         ctx.post.getAll.setData(undefined, (old) => {
           return old?.map((p) =>
@@ -101,32 +104,29 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
       },
     });
 
-  const {
-    mutate: deletePost,
-    isLoading: loadingDelete,
-    isSuccess,
-  } = api.post.remove.useMutation({
-    onSuccess() {
-      ctx.post.getAll.invalidate();
-      ctx.post.getByUserId.invalidate({ userId: session?.user.id });
-      ctx.post.getOwn.invalidate();
-    },
-    onError(err) {
-      toast({
-        status: "error",
-        title: err.message,
-      });
-    },
-  });
+  const { mutate: deletePost, isLoading: loadingDelete } =
+    api.post.remove.useMutation({
+      async onSuccess() {
+        await ctx.post.getAll.invalidate();
+        await ctx.post.getByUserId.invalidate({ userId: session?.user.id });
+        await ctx.post.getOwn.invalidate();
+        onClose();
+      },
+      onError(err) {
+        toast({
+          status: "error",
+          title: err.message,
+        });
+      },
+    });
 
   const isLiked = likedBy.some((user) => user.id === session?.user.id);
 
-  const handleComments = () => {
-    //todo add alert to signin
+  const handleComments = async () => {
     if (isFetched) {
-      ctx.comment.getAll.reset({ postId: id });
+      await ctx.comment.getAll.reset({ postId: id });
     } else {
-      refetch();
+      await refetch();
     }
   };
 
@@ -148,7 +148,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(`http://localhost:3000/post/${id}`);
-    toast({
+    void toast({
       title: "Link copied to clipboard!",
       status: "info",
     });
@@ -167,7 +167,9 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
             />
             <Link
               href={
-                session?.user.id === authorId ? "/profile" : `/@${author.name}`
+                session?.user.id === authorId
+                  ? "/profile"
+                  : `/@${author.name ?? ""}`
               }
               as={NextLink}
             >
@@ -196,6 +198,15 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                     >
                       Share
                     </Button>
+                    <Link as={NextLink} href={`/post/${id}`} w={"full"}>
+                      <Button
+                        w={"full"}
+                        colorScheme="purple"
+                        rightIcon={<Icon as={InfoOutlineIcon} />}
+                      >
+                        Details
+                      </Button>
+                    </Link>
                     {authorId === session?.user.id && (
                       <>
                         <EditPostModal
@@ -208,7 +219,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                           onDelete={handleDelete}
                           loading={loadingDelete}
                           toDelete="Post"
-                          isSuccess={isSuccess}
+                          disclosure={useDisclosure}
                         />
                       </>
                     )}
@@ -243,7 +254,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
           </HStack>
           <HStack>
             <Link
-              href={`/@${author.name}`}
+              href={`/@${author.name ?? ""}`}
               as={NextLink}
               fontSize={"lg"}
               fontWeight={"semibold"}
@@ -288,7 +299,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                   <Comment
                     key={comment.id}
                     comment={comment}
-                    onRefetch={() => refetch()}
+                    onRefetch={async () => await refetch()}
                   />
                   <Divider />
                 </Fragment>
@@ -299,11 +310,13 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
               <Text>No comments found</Text>
             </Center>
           )}
-          <NewCommentWizard
-            postId={id}
-            authorName={author.name}
-            onRefetch={() => refetch()}
-          />
+          {session && (
+            <NewCommentWizard
+              postId={id}
+              authorName={author.name}
+              onRefetch={async () => await refetch()}
+            />
+          )}
         </CardBody>
         <CardFooter
           display={"flex"}

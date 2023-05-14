@@ -5,127 +5,159 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  Spinner,
   Container,
   Center,
   Text,
+  Icon,
+  Flex,
 } from "@chakra-ui/react";
 
-import { GetStaticProps, NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import { useState } from "react";
 import LoadingPost from "~/components/LoadingPost";
 import Post from "~/components/Post";
 import SearchBar from "~/components/SearchBar";
 import { api } from "~/utils/api";
+import { useDebounce } from "use-debounce";
+import { FaPaw } from "react-icons/fa";
 
-const Search: NextPage<{ query: string }> = ({ query }) => {
-  const [option, setOption] = useState("user");
+const Search: NextPage<{ query: string; option: string }> = ({
+  query: initialQuery,
+  option: initialOption,
+}) => {
+  const [option, setOption] = useState(initialOption);
+  const [searchTerm, setSearchTerm] = useState(initialQuery.replace("~", "#"));
+  const [debounceValue] = useDebounce(searchTerm, 800);
 
   const { data: postsByUsername, isLoading: loadingPostByUsername } =
     api.post.getByUsername.useQuery(
       {
-        username: query,
+        username: debounceValue.replaceAll("@", "").replaceAll("#", ""),
       },
       {
-        enabled: option === "user",
+        enabled: option === "user" && !!debounceValue,
       }
     );
 
   const { data: postsByTag, isLoading: loadingPostByTag } =
     api.post.getByTags.useQuery(
       {
-        tag: query,
+        tag: debounceValue.replaceAll("@", "").replaceAll("#", ""),
       },
       {
-        enabled: option === "tag",
+        enabled: option === "tag" && !!debounceValue,
       }
     );
 
   return (
     <Box as={"main"} mx={2} my={4}>
       <Box mb={2}>
-        <SearchBar initialValue={query} />
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          placeholder={"Search..."}
+        />
       </Box>
-      <Tabs colorScheme="teal">
-        <TabList>
-          <Tab flex={1} onClick={() => setOption("user")}>
-            Users
-          </Tab>
-          <Tab flex={1} onClick={() => setOption("tag")}>
-            Tags
-          </Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <Container maxW="lg">
-              {loadingPostByUsername && <LoadingPost quantity={2} />}
-              {!loadingPostByUsername && postsByUsername?.length ? (
-                <>
-                  {postsByUsername?.map((post) => (
-                    <Post key={post.id} post={post} />
-                  ))}
-                </>
-              ) : null}
-              {!loadingPostByUsername && !postsByUsername?.length && (
-                <Center>
-                  <Text fontSize={"2xl"}>
-                    Not user matched{" "}
-                    <Text as={"span"} fontWeight={"semibold"}>
-                      {query}
-                    </Text>
-                    .
-                  </Text>
-                </Center>
-              )}
-            </Container>
-          </TabPanel>
-          <TabPanel>
-            <Container maxW="lg">
-              {loadingPostByTag && <LoadingPost quantity={2} />}
-              {!loadingPostByTag && postsByTag?.length ? (
-                <>
-                  {postsByTag?.map((post) => (
-                    <Post key={post.id} post={post} />
-                  ))}
-                </>
-              ) : null}
-              {!loadingPostByTag && !postsByTag?.length && (
-                <Center>
-                  <Text fontSize={"2xl"}>
-                    Not tag matched{" "}
-                    <Text as={"span"} fontWeight={"semibold"}>
-                      {query}
-                    </Text>
-                    .
-                  </Text>
-                </Center>
-              )}
-            </Container>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      {!debounceValue && (
+        <Center mt={10}>
+          <Flex align={"center"} gap={2}>
+            <Text fontSize={"2xl"}>Please provide a valid search</Text>
+            <Icon as={FaPaw} />
+          </Flex>
+        </Center>
+      )}
+      {debounceValue && (
+        <Tabs colorScheme="teal" index={option === "user" ? 0 : 1}>
+          <TabList>
+            <Tab flex={1} onClick={() => setOption("user")}>
+              Users
+            </Tab>
+            <Tab flex={1} onClick={() => setOption("tag")}>
+              Tags
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <Container maxW="lg">
+                {option === "user" && loadingPostByUsername && (
+                  <LoadingPost quantity={2} />
+                )}
+                {option === "user" &&
+                !loadingPostByUsername &&
+                postsByUsername?.length ? (
+                  <>
+                    {postsByUsername?.map((post) => (
+                      <Post key={post.id} post={post} />
+                    ))}
+                  </>
+                ) : null}
+                {option === "user" &&
+                  !loadingPostByUsername &&
+                  !postsByUsername?.length && (
+                    <Center>
+                      <Flex align={"center"} gap={2}>
+                        <Text fontSize={"2xl"}>
+                          Not user matched{" "}
+                          <Text as={"span"} fontWeight={"semibold"}>
+                            {debounceValue.replace("@", "").replace("#", "")}
+                          </Text>
+                        </Text>
+                        <Icon as={FaPaw} />
+                      </Flex>
+                    </Center>
+                  )}
+              </Container>
+            </TabPanel>
+            <TabPanel>
+              <Container maxW="lg">
+                {option === "tag" && loadingPostByTag && (
+                  <LoadingPost quantity={2} />
+                )}
+                {option === "tag" && !loadingPostByTag && postsByTag?.length ? (
+                  <>
+                    {postsByTag?.map((post) => (
+                      <Post key={post.id} post={post} />
+                    ))}
+                  </>
+                ) : null}
+                {option === "tag" &&
+                  !loadingPostByTag &&
+                  !postsByTag?.length && (
+                    <Center>
+                      <Flex align={"center"} gap={2}>
+                        <Text fontSize={"2xl"}>
+                          Not tag matched{" "}
+                          <Text as={"span"} fontWeight={"semibold"}>
+                            {debounceValue.replace("@", "").replace("#", "")}
+                          </Text>
+                        </Text>
+                        <Icon as={FaPaw} />
+                      </Flex>
+                    </Center>
+                  )}
+              </Container>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      )}
     </Box>
   );
 };
 
-export const getStaticProps: GetStaticProps = async (context) => {
-  // const ssg = generateSSGHelper();
+export const getServerSideProps: GetServerSideProps<{
+  query: string | string[] | undefined;
+}> = async (context) => {
   const query = context.params?.query;
-
-  if (typeof query !== "string") throw new Error("no query");
-
-  // await ssg.profile.getByUsername.prefetch({ username });
-
+  let option = "";
+  if (typeof query === "string") {
+    option = query.startsWith("~") ? "tag" : "user";
+  }
   return {
     props: {
-      // trpcState: ssg.dehydrate(),
       query,
+      option,
     },
   };
-};
-
-export const getStaticPaths = () => {
-  return { paths: [], fallback: "blocking" };
 };
 
 export default Search;

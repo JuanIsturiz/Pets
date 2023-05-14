@@ -1,16 +1,16 @@
 import { Box, Center, Container, Flex, Text } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import Head from "next/head";
+import { useState } from "react";
 import LoadingPost from "~/components/LoadingPost";
 import NewPostWizard from "~/components/NewPostWizard";
 import Post from "~/components/Post";
 import SearchBar from "~/components/SearchBar";
 import { api } from "~/utils/api";
 
-// todo fix 0 from empty results
-
 const Home: NextPage = () => {
   const { data: posts, isLoading } = api.post.getAll.useQuery();
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <>
@@ -21,18 +21,22 @@ const Home: NextPage = () => {
       </Head>
       <Box as={"main"} mx={2} my={4}>
         <Flex gap={4} mb={4}>
-          <SearchBar />
+          <SearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            placeholder="Search by @username or #tag..."
+          />
           <NewPostWizard />
         </Flex>
         <Container maxW="lg">
           {isLoading && <LoadingPost quantity={2} />}
-          {!isLoading && posts?.length && (
+          {!isLoading && posts?.length ? (
             <>
               {posts?.map((post) => (
                 <Post key={post.id} post={post} />
               ))}
             </>
-          )}
+          ) : null}
           {!isLoading && !posts?.length && (
             <Center>
               <Text fontSize={"2xl"}>User has no posts.</Text>

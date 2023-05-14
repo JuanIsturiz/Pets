@@ -12,12 +12,14 @@ interface NewCommentWizardProps {
   postId: string;
   authorName: string | null;
   onRefetch: () => void;
+  fontSize?: string;
 }
 
 const NewCommentWizard: React.FC<NewCommentWizardProps> = ({
   postId,
   authorName,
   onRefetch,
+  fontSize,
 }) => {
   const [text, setText] = useState("");
 
@@ -61,6 +63,7 @@ const NewCommentWizard: React.FC<NewCommentWizardProps> = ({
           placeholder={`Add a comment for ${authorName ?? ""}...`}
           focusBorderColor="teal.400"
           onChange={(e) => setText(e.target.value)}
+          fontSize={fontSize ?? "md"}
         />
         <InputRightElement
           color={"teal.400"}

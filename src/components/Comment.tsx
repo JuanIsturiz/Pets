@@ -1,6 +1,6 @@
 import { Box, Spinner, StackItem, Text } from "@chakra-ui/react";
 import React from "react";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { DeleteIcon } from "@chakra-ui/icons";
@@ -19,8 +19,8 @@ const Comment: React.FC<CommentProps> = ({ comment, onRefetch }) => {
   const { data: session } = useSession();
   const ctx = api.useContext();
   const { mutate: deleteComment, isLoading } = api.comment.remove.useMutation({
-    onSuccess() {
-      ctx.comment.getAll.invalidate();
+    async onSuccess() {
+      await ctx.comment.getAll.invalidate();
       onRefetch();
     },
   });

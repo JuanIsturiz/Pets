@@ -10,14 +10,13 @@ import {
   Spinner,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
 
 interface DeleteItemButtonProps {
   onDelete: () => void;
   loading: boolean;
   info?: string;
   toDelete: "Pet" | "Post";
-  isSuccess: boolean;
+  disclosure: typeof useDisclosure;
 }
 
 const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
@@ -25,14 +24,9 @@ const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
   loading,
   info,
   toDelete,
-  isSuccess,
+  disclosure,
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  useEffect(() => {
-    if (!isSuccess) return;
-    onClose();
-  }, [isSuccess]);
+  const { isOpen, onOpen, onClose } = disclosure();
 
   return (
     <>
@@ -59,9 +53,8 @@ const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
               onClick={onDelete}
               rightIcon={loading ? <Spinner /> : <DeleteIcon />}
             >
-              {toDelete === "Pet"
-                ? `Delete ${info} permanently`
-                : "Delete post permanently"}
+              Delete{" "}
+              {toDelete === "Pet" ? `${info} permanently` : "post permanently"}
             </Button>
             <Button colorScheme="red" onClick={onClose} variant="ghost">
               Cancel

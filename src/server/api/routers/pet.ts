@@ -15,7 +15,6 @@ export const petRouter = createTRPCRouter({
   }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.pet.findMany({
-      //todo include pet owner
       orderBy: {
         createdAt: "desc",
       },
@@ -61,18 +60,17 @@ export const petRouter = createTRPCRouter({
         name: z.string(),
         specie: z.string(),
         image: z.string(),
-        birthday: z.string(),
+        birthday: z.date(),
         genre: z.enum(["male", "female"]),
         size: z.enum(["xs", "sm", "md", "lg", "xl"]),
-        bio: z.string().nullable(),
+        bio: z.optional(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const birthdayDate = new Date(input.birthday);
       const userId = ctx.session?.user.id;
       if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
       const fixedDate = new Date(
-        birthdayDate.setDate(birthdayDate.getDate() + 1)
+        input.birthday.setDate(input.birthday.getDate() + 1)
       );
       await ctx.prisma.pet.create({
         data: {

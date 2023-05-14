@@ -16,7 +16,6 @@ import {
   PopoverContent,
   PopoverArrow,
   PopoverBody,
-  Spinner,
   useToast,
   Tooltip,
   Editable,
@@ -26,13 +25,13 @@ import {
   Box,
   useEditableControls,
   IconButton,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { Age } from "age2";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FiShare } from "react-icons/fi";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import DeleteItemButton from "./DeleteItemButton";
 import { formatAge } from "~/utils/formatAge";
 
@@ -41,24 +40,24 @@ type Pet = RouterOutputs["pet"]["getOwn"][number];
 const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
   const { data: session } = useSession();
   const toast = useToast();
+  const { onClose } = useDisclosure();
+
   const ctx = api.useContext();
-  const {
-    mutate: deletePet,
-    isLoading: loadingDelete,
-    isSuccess,
-  } = api.pet.remove.useMutation({
-    onSuccess() {
-      ctx.pet.getAll.invalidate();
-      ctx.pet.getByUserId.invalidate({ userId: session?.user.id });
-      ctx.pet.getOwn.invalidate();
-    },
-    onError(err) {
-      toast({
-        status: "error",
-        title: err.message,
-      });
-    },
-  });
+  const { mutate: deletePet, isLoading: loadingDelete } =
+    api.pet.remove.useMutation({
+      async onSuccess() {
+        await ctx.pet.getAll.invalidate();
+        await ctx.pet.getByUserId.invalidate({ userId: session?.user.id });
+        await ctx.pet.getOwn.invalidate();
+        onClose();
+      },
+      onError(err) {
+        toast({
+          status: "error",
+          title: err.message,
+        });
+      },
+    });
 
   const handleDelete = () => {
     if (loadingDelete) return;
@@ -69,7 +68,7 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(`http://localhost:3000/pet/${pet.id}`);
-    toast({
+    void toast({
       title: "Link copied to clipboard!",
       status: "info",
     });
@@ -84,8 +83,8 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
               position={"absolute"}
               size={"sm"}
               variant={"ghost"}
-              top={5}
-              right={6}
+              top={{ base: 1, md: 5 }}
+              right={{ base: 1, md: 6 }}
             >
               <Icon as={BsThreeDots} />
             </Button>
@@ -107,7 +106,7 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                     loading={loadingDelete}
                     toDelete="Pet"
                     info={pet.name}
-                    isSuccess={isSuccess}
+                    disclosure={useDisclosure}
                   />
                 )}
               </ButtonGroup>
@@ -115,13 +114,18 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
           </PopoverContent>
         </Popover>
         <CardBody>
-          <Grid templateColumns={"1fr 2fr"} gap={4}>
-            <GridItem>
+          <Grid
+            templateColumns={{ base: "1fr", md: "1fr 2fr" }}
+            templateRows={{ base: "1.5fr 1fr", md: "1fr" }}
+            gap={4}
+            alignItems={"start"}
+          >
+            <GridItem alignSelf={"center"} justifySelf={"center"}>
               <Image
                 src={pet.image ?? ""}
                 alt={`${pet.name} picture`}
-                w={"250px"}
-                h={"250px"}
+                w={{ base: "375px", md: "250px" }}
+                h={{ base: "375px", md: "250px" }}
                 objectFit={"cover"}
                 rounded={"2xl"}
               />

@@ -8,7 +8,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { GetStaticProps, NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 import { formatAge } from "~/utils/formatAge";

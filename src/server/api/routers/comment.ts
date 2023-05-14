@@ -21,6 +21,9 @@ export const commentRouter = createTRPCRouter({
             },
           },
         },
+        orderBy: {
+          createdAt: "desc",
+        },
       });
     }),
   create: protectedProcedure

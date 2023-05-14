@@ -108,6 +108,34 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
+  getById: publicProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const post = await ctx.prisma.post.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          author: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+          likedBy: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+      if (!post) throw new TRPCError({ code: "NOT_FOUND" });
+      return post;
+    }),
   getByTags: publicProcedure
     .input(
       z.object({

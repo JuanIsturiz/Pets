@@ -8,10 +8,6 @@ import {
   Input,
   Radio,
   RadioGroup,
-  Slider,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderTrack,
   Spinner,
   Stack,
   Textarea,
@@ -27,13 +23,13 @@ import { convertBase64 } from "~/utils/converter";
 interface PetData {
   name: string;
   specie: string;
-  image?: any;
+  image: string;
   birthday: Date;
-  genre: string;
-  size: string;
-  bio?: string | null;
-  //todo favToys?: string[];
+  genre: "male" | "female";
+  size: "xs" | "sm" | "md" | "lg" | "xl";
+  bio?: string;
 }
+
 const Add: NextPage = () => {
   const { status } = useSession();
   useEffect(() => {
@@ -46,26 +42,30 @@ const Add: NextPage = () => {
 
   const { mutate: createPet, isLoading } = api.pet.create.useMutation({
     onSuccess() {
-      toast({
+      void toast({
         title: "Pet created successfully!",
         status: "success",
         duration: 2000,
       });
 
       setTimeout(() => {
-        replace("/profile");
+        void replace("/profile");
       }, 2500);
     },
   });
-  const [genre, setGenre] = useState("male");
-  const [size, setSize] = useState("sm");
+  const [genre, setGenre] = useState<"male" | "female">("male");
+  const [size, setSize] = useState<"xs" | "sm" | "md" | "lg" | "xl">("sm");
   const [bio, setBio] = useState("");
 
   const [baseImage, setBaseImage] = useState<string | null>(null);
+  const [name, setName] = useState<string>("");
+  const [specie, setSpecie] = useState<string>("");
+  const [birthday, setBirthday] = useState<string>("");
 
   const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
+    if (!file) return;
     const base64 = await convertBase64(file);
     setBaseImage(base64 as string);
   };
@@ -77,8 +77,17 @@ const Add: NextPage = () => {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data: any = Object.fromEntries(new window.FormData(e.currentTarget));
-    createPet({ ...data, image: baseImage });
+    if (!baseImage) return;
+    const newPet: PetData = {
+      name,
+      specie,
+      image: baseImage,
+      birthday: new Date(birthday),
+      genre,
+      size,
+      bio,
+    };
+    createPet(newPet);
   };
 
   return (
@@ -96,11 +105,12 @@ const Add: NextPage = () => {
             variant={"filled"}
             focusBorderColor="teal.400"
             placeholder="Hedwig"
-            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
           <FormHelperText fontSize={"md"}>Enter your pets name.</FormHelperText>
         </FormControl>
-        {/* pet type */}
+        {/* pet specie */}
         <FormControl mb={2} isRequired>
           <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
             Specie
@@ -111,7 +121,8 @@ const Add: NextPage = () => {
             variant={"filled"}
             focusBorderColor="teal.400"
             placeholder="Dog, cat, wolf, turtle, dinosaur..."
-            name="specie"
+            value={specie}
+            onChange={(e) => setSpecie(e.target.value)}
           />
           <FormHelperText fontSize={"md"}>
             Enter your pet specie.
@@ -125,7 +136,7 @@ const Add: NextPage = () => {
           <input
             type="file"
             required
-            onChange={(e) => uploadImage(e)}
+            onChange={async (e) => await uploadImage(e)}
             accept="image/*"
             max={500000}
           />
@@ -142,7 +153,8 @@ const Add: NextPage = () => {
             type="date"
             variant={"filled"}
             focusBorderColor="teal.400"
-            name="birthday"
+            value={birthday}
+            onChange={(e) => setBirthday(e.target.value)}
           />
           <FormHelperText fontSize={"md"}>
             Enter your pets birthday.
@@ -153,7 +165,11 @@ const Add: NextPage = () => {
           <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
             Genre
           </FormLabel>
-          <RadioGroup onChange={setGenre} value={genre} name="genre">
+          <RadioGroup
+            value={genre}
+            name="genre"
+            onChange={(genre: "male" | "female") => setGenre(genre)}
+          >
             <Stack direction="row" spacing={4}>
               <Radio value="male" colorScheme="teal">
                 Male
@@ -172,7 +188,11 @@ const Add: NextPage = () => {
           <FormLabel fontSize={"xl"} fontWeight={"semibold"}>
             Size
           </FormLabel>
-          <RadioGroup onChange={setSize} value={size} name="size">
+          <RadioGroup
+            onChange={(size: "xs" | "sm" | "md" | "lg" | "xl") => setSize(size)}
+            value={size}
+            name="size"
+          >
             <Stack direction="column" spacing={2}>
               <Radio value="xs" colorScheme="teal">
                 Extra Small

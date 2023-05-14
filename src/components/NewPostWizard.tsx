@@ -68,10 +68,10 @@ const NewPostWizard: React.FC = () => {
   const [description, setDescription] = useState<string>("");
   const [title, setTitle] = useState<string>("");
 
-  console.log(petId);
   const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
+    if (!file) return;
     const base64 = await convertBase64(file);
     setBaseImage(base64 as string);
   };

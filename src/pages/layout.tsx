@@ -1,5 +1,5 @@
 import { Container } from "@chakra-ui/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Comic_Neue } from "next/font/google";
 import Header from "~/components/Header";
 
