@@ -34,7 +34,7 @@ const Add: NextPage = () => {
   const { status } = useSession();
   useEffect(() => {
     if (status === "unauthenticated") {
-      signIn();
+      void signIn();
     }
   }, [status]);
   const { replace } = useRouter();
@@ -136,7 +136,9 @@ const Add: NextPage = () => {
           <input
             type="file"
             required
-            onChange={async (e) => await uploadImage(e)}
+            onChange={async (e) => {
+              await uploadImage(e);
+            }}
             accept="image/*"
             max={500000}
           />

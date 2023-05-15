@@ -18,11 +18,12 @@ import {
   useToast,
   Link,
   Center,
+  Box,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 
 import { MdOutlineAddBox } from "react-icons/md";
-import React, { useState } from "react";
+import React, { FC, MutableRefObject, useState } from "react";
 import TagInput from "./TagInput";
 import { convertBase64 } from "~/utils/converter";
 import { api } from "~/utils/api";
@@ -36,7 +37,9 @@ interface INewPost {
   tags: string[] | undefined;
   petId: string;
 }
-const NewPostWizard: React.FC = () => {
+const NewPostWizard: FC<{
+  btnRef: MutableRefObject<HTMLButtonElement | null>;
+}> = ({ btnRef }) => {
   const { data: session } = useSession();
   const toast = useToast();
 
@@ -114,8 +117,9 @@ const NewPostWizard: React.FC = () => {
   };
 
   return (
-    <>
+    <Box>
       <Button
+        ref={btnRef}
         onClick={handleOpen}
         variant={"ghost"}
         colorScheme="teal"
@@ -246,7 +250,7 @@ const NewPostWizard: React.FC = () => {
           )}
         </ModalContent>
       </Modal>
-    </>
+    </Box>
   );
 };
 

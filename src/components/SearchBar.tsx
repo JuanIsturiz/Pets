@@ -17,7 +17,7 @@ const SearchBar: React.FC<{
 }> = ({ searchTerm, setSearchTerm, placeholder }) => {
   const { replace, pathname } = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pathname.includes("/search")) {
       return;

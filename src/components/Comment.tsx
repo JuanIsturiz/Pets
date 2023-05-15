@@ -11,7 +11,7 @@ type Comment = RouterOutputs["comment"]["getAll"][number];
 
 interface CommentProps {
   comment: Comment;
-  onRefetch: () => void;
+  onRefetch: () => Promise<void>;
 }
 
 const Comment: React.FC<CommentProps> = ({ comment, onRefetch }) => {

@@ -12,7 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import type { GetStaticProps, NextPage } from "next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoadingPet from "~/components/LoadingPet";
 import LoadingUser from "~/components/LoadingUser";
 import Post from "~/components/Post";
@@ -20,15 +20,19 @@ import UserPet from "~/components/Pet";
 import { api } from "~/utils/api";
 import LoadingPost from "~/components/LoadingPost";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 const Profile: NextPage<{ username: string }> = ({ username }) => {
+  const { data: session } = useSession();
+  const { replace } = useRouter();
+
   const [filter, setFilter] = useState("posts");
 
   const { data: user, isLoading: loadingUser } =
     api.profile.getByUsername.useQuery({
       username,
     });
-
   const { data: posts, isLoading: loadingPosts } =
     api.post.getByUserId.useQuery(
       { userId: user?.id ?? "" },
@@ -43,6 +47,12 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
       enabled: filter === "pets" && !loadingUser,
     }
   );
+  useEffect(() => {
+    if (session?.user.id === user?.id) {
+      void replace("/profile");
+    }
+  }, [session, user]);
+
   return (
     <Box my={4} mx={2}>
       {loadingUser && <LoadingUser />}

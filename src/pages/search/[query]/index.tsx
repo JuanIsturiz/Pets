@@ -12,7 +12,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 
-import type { GetServerSideProps, NextPage } from "next";
+import type { GetServerSidePropsContext, NextPage } from "next";
 import { useState } from "react";
 import LoadingPost from "~/components/LoadingPost";
 import Post from "~/components/Post";
@@ -144,9 +144,9 @@ const Search: NextPage<{ query: string; option: string }> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps<{
-  query: string | string[] | undefined;
-}> = async (context) => {
+export const getServerSideProps = (
+  context: GetServerSidePropsContext<{ query: string }>
+) => {
   const query = context.params?.query;
   let option = "";
   if (typeof query === "string") {

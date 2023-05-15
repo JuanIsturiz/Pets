@@ -2,29 +2,36 @@ import { DeleteIcon } from "@chakra-ui/icons";
 import {
   Button,
   Modal,
+  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
   Spinner,
-  useDisclosure,
+  type useDisclosure,
 } from "@chakra-ui/react";
 
 interface DeleteItemButtonProps {
   onDelete: () => void;
   loading: boolean;
-  info?: string;
-  toDelete: "Pet" | "Post";
+  toDelete: ToDelete;
   disclosure: typeof useDisclosure;
+  value: string;
+}
+
+export enum ToDelete {
+  PET = "PET",
+  POST = "POST",
+  ACCOUNT = "ACCOUNT",
 }
 
 const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
   onDelete,
   loading,
-  info,
   toDelete,
   disclosure,
+  value,
 }) => {
   const { isOpen, onOpen, onClose } = disclosure();
 
@@ -41,10 +48,9 @@ const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>
-            Are you sure you want to delete this{" "}
-            {toDelete === "Pet" ? "pet" : "post"}?
-          </ModalHeader>
+          <ModalBody fontSize={"2xl"}>
+            Are you sure you want to delete this {toDelete.toLowerCase()}?
+          </ModalBody>
           <ModalCloseButton />
           <ModalFooter>
             <Button
@@ -53,8 +59,7 @@ const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
               onClick={onDelete}
               rightIcon={loading ? <Spinner /> : <DeleteIcon />}
             >
-              Delete{" "}
-              {toDelete === "Pet" ? `${info} permanently` : "post permanently"}
+              {value}
             </Button>
             <Button colorScheme="red" onClick={onClose} variant="ghost">
               Cancel

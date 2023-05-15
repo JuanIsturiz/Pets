@@ -13,7 +13,6 @@ import {
   Image,
   Link,
   Skeleton,
-  StackItem,
   Text,
   VStack,
   Popover,
@@ -37,7 +36,7 @@ import { useSession } from "next-auth/react";
 import { BsThreeDots } from "react-icons/bs";
 import { FiShare } from "react-icons/fi";
 import EditPostModal from "./EditPostModal";
-import DeleteItemButton from "./DeleteItemButton";
+import DeleteItemButton, { ToDelete } from "./DeleteItemButton";
 import { InfoOutlineIcon } from "@chakra-ui/icons";
 
 dayjs.extend(relativeTime);
@@ -146,11 +145,13 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     });
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(`http://localhost:3000/post/${id}`);
+  const handleShare = async () => {
+    const origin = window.location.origin;
+    await navigator.clipboard.writeText(`${origin}/post/${id}`);
     void toast({
       title: "Link copied to clipboard!",
       status: "info",
+      duration: 2000,
     });
   };
 
@@ -172,6 +173,7 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                   : `/@${author.name ?? ""}`
               }
               as={NextLink}
+              target="_blank"
             >
               {author.name}
             </Link>
@@ -198,7 +200,12 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                     >
                       Share
                     </Button>
-                    <Link as={NextLink} href={`/post/${id}`} w={"full"}>
+                    <Link
+                      as={NextLink}
+                      href={`/post/${id}`}
+                      w={"full"}
+                      target="_blank"
+                    >
                       <Button
                         w={"full"}
                         colorScheme="purple"
@@ -218,7 +225,8 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                         <DeleteItemButton
                           onDelete={handleDelete}
                           loading={loadingDelete}
-                          toDelete="Post"
+                          toDelete={ToDelete.POST}
+                          value="Delete post permanently"
                           disclosure={useDisclosure}
                         />
                       </>
@@ -266,22 +274,24 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
           <Text mb={2}>{description}</Text>
           <HStack mb={2}>
             {tags?.split("~").map((tag, idx) => (
-              <StackItem
+              <Link
                 key={`${idx}_${tag}`}
-                py={1}
-                px={2}
-                bg={"teal.500"}
-                rounded={"lg"}
-                shadow={"md"}
+                as={NextLink}
+                href={`/search/~${tag}`}
               >
-                #{tag}
-              </StackItem>
+                <Button colorScheme="teal" py={2} h={"auto"}>
+                  #{tag}
+                </Button>
+              </Link>
             ))}
           </HStack>
           <Text
+            as={"span"}
             fontSize={"lg"}
             _hover={{ textDecoration: "underline", cursor: "pointer" }}
-            onClick={handleComments}
+            onClick={async () => {
+              await handleComments();
+            }}
           >
             Load Comments
           </Text>
@@ -299,7 +309,9 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                   <Comment
                     key={comment.id}
                     comment={comment}
-                    onRefetch={async () => await refetch()}
+                    onRefetch={async () => {
+                      await refetch();
+                    }}
                   />
                   <Divider />
                 </Fragment>
@@ -314,7 +326,9 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
             <NewCommentWizard
               postId={id}
               authorName={author.name}
-              onRefetch={async () => await refetch()}
+              onRefetch={async () => {
+                await refetch();
+              }}
             />
           )}
         </CardBody>

@@ -32,7 +32,7 @@ import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FiShare } from "react-icons/fi";
 import { type RouterOutputs, api } from "~/utils/api";
-import DeleteItemButton from "./DeleteItemButton";
+import DeleteItemButton, { ToDelete } from "./DeleteItemButton";
 import { formatAge } from "~/utils/formatAge";
 
 type Pet = RouterOutputs["pet"]["getOwn"][number];
@@ -66,11 +66,13 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
     });
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(`http://localhost:3000/pet/${pet.id}`);
+  const handleShare = async () => {
+    const origin = window.location.origin;
+    await navigator.clipboard.writeText(`${origin}/pet/${pet.id}`);
     void toast({
       title: "Link copied to clipboard!",
       status: "info",
+      duration: 2000,
     });
   };
 
@@ -104,8 +106,8 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                   <DeleteItemButton
                     onDelete={handleDelete}
                     loading={loadingDelete}
-                    toDelete="Pet"
-                    info={pet.name}
+                    toDelete={ToDelete.PET}
+                    value={`Delete ${pet.name} permanently`}
                     disclosure={useDisclosure}
                   />
                 )}

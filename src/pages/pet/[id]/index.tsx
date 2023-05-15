@@ -7,12 +7,13 @@ import {
   Image,
   Text,
   VStack,
+  Link,
 } from "@chakra-ui/react";
 import type { GetStaticProps, NextPage } from "next";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 import { formatAge } from "~/utils/formatAge";
-
+import NextLink from "next/link";
 const PetPage: NextPage<{ id: string }> = ({ id }) => {
   const { data: pet } = api.pet.getById.useQuery({ id });
   return (
@@ -89,7 +90,9 @@ const PetPage: NextPage<{ id: string }> = ({ id }) => {
                 <Text textTransform={"capitalize"} fontWeight={"semibold"}>
                   owner:
                 </Text>
-                <Text>@{pet?.owner.name}</Text>
+                <Link as={NextLink} href={`/@${pet?.owner.name ?? ""}`}>
+                  @{pet?.owner.name}
+                </Link>
               </Box>
             </VStack>
           </GridItem>

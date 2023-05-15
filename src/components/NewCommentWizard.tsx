@@ -11,7 +11,7 @@ import { api } from "~/utils/api";
 interface NewCommentWizardProps {
   postId: string;
   authorName: string | null;
-  onRefetch: () => void;
+  onRefetch: () => Promise<void>;
   fontSize?: string;
 }
 
@@ -28,7 +28,7 @@ const NewCommentWizard: React.FC<NewCommentWizardProps> = ({
   const { mutate, isLoading } = api.comment.create.useMutation({
     async onSuccess() {
       await ctx.comment.getAll.invalidate({ postId });
-      onRefetch();
+      await onRefetch();
       setText("");
     },
   });

@@ -17,7 +17,7 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import type { GetServerSideProps, NextPage } from "next";
+import type { GetServerSidePropsContext, NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { Fragment } from "react";
 import Comment from "~/components/Comment";
@@ -98,6 +98,7 @@ const PetPage: NextPage<{ id: string }> = ({ id }) => {
                 src={post?.image ?? ""}
                 objectFit={"cover"}
                 rounded={"md"}
+                alt={"Post Picture"}
               />
             </GridItem>
             <GridItem>
@@ -169,7 +170,9 @@ const PetPage: NextPage<{ id: string }> = ({ id }) => {
                       <Comment
                         key={comment.id}
                         comment={comment}
-                        onRefetch={handleComments}
+                        onRefetch={async () => {
+                          handleComments();
+                        }}
                       />
                     </Box>
                     <Divider />
@@ -186,7 +189,9 @@ const PetPage: NextPage<{ id: string }> = ({ id }) => {
                 <NewCommentWizard
                   authorName={post?.author.name ?? ""}
                   postId={post?.id ?? ""}
-                  onRefetch={handleComments}
+                  onRefetch={async () => {
+                    handleComments();
+                  }}
                   fontSize={"xl"}
                 />
               </Box>
@@ -198,10 +203,11 @@ const PetPage: NextPage<{ id: string }> = ({ id }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<{
-  id: string | string[] | undefined;
-}> = async (context) => {
+export const getServerSideProps = (
+  context: GetServerSidePropsContext<{ id: string }>
+) => {
   const id = context.params?.id;
+
   return {
     props: {
       id,
