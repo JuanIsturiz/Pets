@@ -61,7 +61,7 @@ const Home: NextPage = () => {
               }
             >
               {flattenInifinitePosts.map(
-                (post) =>
+                (post, idx) =>
                   post && (
                     <Post key={post.id} post={post} location="getAllInfinite" />
                   )

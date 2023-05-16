@@ -21,7 +21,7 @@ const LoadingPost: React.FC<{ quantity: number }> = ({ quantity }) => {
       {Array(quantity)
         .fill(null)
         .map((_skeleton, idx) => (
-          <ScaleFade key={idx} in={true} initialScale={0.9}>
+          <ScaleFade key={idx} in={true} initialScale={0.9} delay={idx * 500}>
             <Card mb={4} position={"relative"}>
               <CardHeader pb={0}>
                 <HStack spacing={2}>

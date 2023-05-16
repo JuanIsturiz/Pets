@@ -14,7 +14,7 @@ const LoadingPet: React.FC<{ quantity: number }> = ({ quantity }) => {
       {Array(quantity)
         .fill(null)
         .map((_skeleton, idx) => (
-          <ScaleFade key={idx} in={true} initialScale={0.9}>
+          <ScaleFade key={idx} in={true} initialScale={0.9} delay={idx * 500}>
             <Card mb={4}>
               <CardBody>
                 <Grid templateColumns={"1fr 2fr"} gap={2}>

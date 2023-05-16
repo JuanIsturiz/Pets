@@ -8,7 +8,6 @@ import {
   GridItem,
   Text,
   Divider,
-  Fade,
   Popover,
   PopoverTrigger,
   Button,
@@ -26,6 +25,7 @@ import {
   useEditableControls,
   IconButton,
   useDisclosure,
+  ScaleFade,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -37,7 +37,7 @@ import { formatAge } from "~/utils/formatAge";
 
 type Pet = RouterOutputs["pet"]["getOwn"][number];
 
-const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
+const Pet: React.FC<{ pet: Pet }> = ({ pet }) => {
   const { data: session } = useSession();
   const toast = useToast();
   const { onClose } = useDisclosure();
@@ -77,7 +77,7 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
   };
 
   return (
-    <Fade in={true}>
+    <ScaleFade in={true} initialScale={0.9}>
       <Card mb={4} position={"relative"}>
         <Popover>
           <PopoverTrigger>
@@ -183,7 +183,7 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
           </Grid>
         </CardBody>
       </Card>
-    </Fade>
+    </ScaleFade>
   );
 };
 
@@ -262,4 +262,4 @@ const SubmitEditable: React.FC<{
   );
 };
 
-export default UserPet;
+export default Pet;

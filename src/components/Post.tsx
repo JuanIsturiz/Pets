@@ -7,7 +7,6 @@ import {
   CardHeader,
   Center,
   Divider,
-  Fade,
   HStack,
   Icon,
   Image,
@@ -23,6 +22,7 @@ import {
   ButtonGroup,
   useToast,
   useDisclosure,
+  ScaleFade,
 } from "@chakra-ui/react";
 import { type RouterOutputs, api } from "~/utils/api";
 import NextLink from "next/link";
@@ -54,11 +54,11 @@ type Location =
   | "getById"
   | "getAll";
 
-const Post: React.FC<{ post: Post; location: Location; tag?: string }> = ({
-  post,
-  location,
-  tag,
-}) => {
+const Post: React.FC<{
+  post: Post;
+  location: Location;
+  tag?: string;
+}> = ({ post, location, tag }) => {
   const {
     id,
     title,
@@ -298,7 +298,7 @@ const Post: React.FC<{ post: Post; location: Location; tag?: string }> = ({
   };
 
   return (
-    <Fade in={true}>
+    <ScaleFade in={true} initialScale={0.9}>
       <Card mb={4} position={"relative"}>
         <CardHeader pb={0}>
           <HStack spacing={2}>
@@ -501,7 +501,7 @@ const Post: React.FC<{ post: Post; location: Location; tag?: string }> = ({
           <Divider w={"35%"} />
         </CardFooter>
       </Card>
-    </Fade>
+    </ScaleFade>
   );
 };
 

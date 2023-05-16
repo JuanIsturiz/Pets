@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import LoadingPet from "~/components/LoadingPet";
 import LoadingUser from "~/components/LoadingUser";
 import Post from "~/components/Post";
-import UserPet from "~/components/Pet";
+import Pet from "~/components/Pet";
 import { api } from "~/utils/api";
 import LoadingPost from "~/components/LoadingPost";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
@@ -114,7 +114,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
           {loadingPosts && <LoadingPost quantity={2} />}
           {!loadingPosts && posts?.length && (
             <>
-              {posts?.map((post) => (
+              {posts?.map((post, idx) => (
                 <Post key={post.id} post={post} location="getByUserId" />
               ))}
             </>
@@ -131,8 +131,8 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
           {loadingPets && <LoadingPet quantity={3} />}
           {!loadingPets && pets?.length && (
             <>
-              {pets.map((pet) => (
-                <UserPet key={pet.id} pet={pet} />
+              {pets.map((pet, idx) => (
+                <Pet key={pet.id} pet={pet} />
               ))}
             </>
           )}
