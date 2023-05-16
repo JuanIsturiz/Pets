@@ -178,7 +178,7 @@ const PostPage: NextPage<{ id: string }> = ({ id }) => {
                         key={comment.id}
                         comment={comment}
                         onRefetch={async () => {
-                          handleComments();
+                          await handleComments();
                         }}
                       />
                     </Box>
@@ -197,7 +197,7 @@ const PostPage: NextPage<{ id: string }> = ({ id }) => {
                   authorName={post?.author.name ?? ""}
                   postId={post?.id ?? ""}
                   onRefetch={async () => {
-                    handleComments();
+                    await handleComments();
                   }}
                   fontSize={"xl"}
                 />

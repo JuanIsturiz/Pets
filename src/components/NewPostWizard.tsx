@@ -23,7 +23,7 @@ import {
 import NextLink from "next/link";
 
 import { MdOutlineAddBox } from "react-icons/md";
-import React, { FC, MutableRefObject, useState } from "react";
+import React, { type FC, type MutableRefObject, useState } from "react";
 import TagInput from "./TagInput";
 import { convertBase64 } from "~/utils/converter";
 import { api } from "~/utils/api";

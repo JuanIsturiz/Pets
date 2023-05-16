@@ -98,7 +98,9 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                 <Button
                   colorScheme="teal"
                   rightIcon={<Icon as={FiShare} />}
-                  onClick={handleShare}
+                  onClick={async () => {
+                    await handleShare();
+                  }}
                 >
                   Share
                 </Button>

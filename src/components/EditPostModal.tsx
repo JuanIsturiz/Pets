@@ -42,7 +42,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
   const ctx = api.useContext();
   const { mutate: updatePost, isLoading } = api.post.update.useMutation({
-    async onSuccess() {
+    onSuccess() {
       onClose();
       toast({
         status: "success",

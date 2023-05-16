@@ -136,8 +136,12 @@ const Add: NextPage = () => {
           <input
             type="file"
             required
-            onChange={async (e) => {
-              await uploadImage(e);
+            onChange={(e) => {
+              (async () => {
+                async (innerEvent = e) => {
+                  await uploadImage(innerEvent);
+                };
+              })();
             }}
             accept="image/*"
             max={500000}

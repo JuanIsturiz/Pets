@@ -21,7 +21,7 @@ const Comment: React.FC<CommentProps> = ({ comment, onRefetch }) => {
   const { mutate: deleteComment, isLoading } = api.comment.remove.useMutation({
     async onSuccess() {
       await ctx.comment.getAll.invalidate();
-      onRefetch();
+      await onRefetch();
     },
   });
 

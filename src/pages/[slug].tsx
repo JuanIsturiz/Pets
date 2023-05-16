@@ -51,7 +51,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
     if (session?.user.id === user?.id) {
       void replace("/profile");
     }
-  }, [session, user]);
+  }, [session, user, replace]);
 
   return (
     <Box my={4} mx={2}>

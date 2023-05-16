@@ -130,7 +130,11 @@ const Profile: NextPage = () => {
                       <Button
                         colorScheme="teal"
                         rightIcon={<Icon as={FiShare} />}
-                        onClick={handleShare}
+                        onClick={() => {
+                          (async () => {
+                            await handleShare();
+                          })();
+                        }}
                       >
                         Share
                       </Button>
