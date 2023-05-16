@@ -99,10 +99,8 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                   colorScheme="teal"
                   rightIcon={<Icon as={FiShare} />}
                   onClick={() => {
-                    (async () => {
-                      async () => {
-                        await handleShare();
-                      };
+                    void (async () => {
+                      await handleShare();
                     })();
                   }}
                 >
