@@ -98,8 +98,12 @@ const UserPet: React.FC<{ pet: Pet }> = ({ pet }) => {
                 <Button
                   colorScheme="teal"
                   rightIcon={<Icon as={FiShare} />}
-                  onClick={async () => {
-                    await handleShare();
+                  onClick={() => {
+                    (async () => {
+                      async () => {
+                        await handleShare();
+                      };
+                    })();
                   }}
                 >
                   Share

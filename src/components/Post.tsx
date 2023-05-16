@@ -339,7 +339,7 @@ const Post: React.FC<{ post: Post; location: Location; tag?: string }> = ({
                       colorScheme="teal"
                       rightIcon={<Icon as={FiShare} />}
                       onClick={() => {
-                        (async () => {
+                        void (async () => {
                           await handleShare();
                         })();
                       }}
@@ -446,7 +446,7 @@ const Post: React.FC<{ post: Post; location: Location; tag?: string }> = ({
             fontSize={"lg"}
             _hover={{ textDecoration: "underline", cursor: "pointer" }}
             onClick={() => {
-              (async () => {
+              void (async () => {
                 await handleComments();
               })();
             }}

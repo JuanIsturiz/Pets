@@ -24,7 +24,6 @@ const Home: NextPage = () => {
     }
   );
 
-  // const { data: posts, isLoading } = api.post.getAll.useQuery();
   const [searchTerm, setSearchTerm] = useState("");
   const flattenInifinitePosts = infinitePosts?.pages.flatMap(
     (page) => page?.posts
@@ -74,19 +73,6 @@ const Home: NextPage = () => {
               <Text fontSize={"2xl"}>User has no posts.</Text>
             </Center>
           )}
-          {/* old posts */}
-          {/* {!isLoading && posts?.length ? (
-            <>
-              {posts?.map((post) => (
-                <Post key={post.id} post={post} />
-              ))}
-            </>
-          ) : null}
-          {!isLoading && !posts?.length && (
-            <Center>
-              <Text fontSize={"2xl"}>User has no posts.</Text>
-            </Center>
-          )} */}
         </Container>
       </Box>
     </>

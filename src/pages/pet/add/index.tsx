@@ -137,7 +137,7 @@ const Add: NextPage = () => {
             type="file"
             required
             onChange={(e) => {
-              (async () => {
+              (() => {
                 async (innerEvent = e) => {
                   await uploadImage(innerEvent);
                 };
