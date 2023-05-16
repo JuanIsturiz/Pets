@@ -115,7 +115,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
           {!loadingPosts && posts?.length && (
             <>
               {posts?.map((post) => (
-                <Post key={post.id} post={post} />
+                <Post key={post.id} post={post} location="getByUserId" />
               ))}
             </>
           )}

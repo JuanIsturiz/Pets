@@ -30,7 +30,7 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 dayjs.extend(relativeTime);
 
-const PetPage: NextPage<{ id: string }> = ({ id }) => {
+const PostPage: NextPage<{ id: string }> = ({ id }) => {
   const { data: session } = useSession();
   const toast = useToast();
 
@@ -72,7 +72,14 @@ const PetPage: NextPage<{ id: string }> = ({ id }) => {
     });
 
   const handleLike = () => {
-    //todo add alert to signin
+    if (!session) {
+      toast({
+        title: "Please Sign In first!",
+        status: "warning",
+        duration: 2000,
+      });
+      return;
+    }
     if (loadingLike) return;
     likePost({
       postId: id,
@@ -215,4 +222,4 @@ export const getServerSideProps = (
   };
 };
 
-export default PetPage;
+export default PostPage;

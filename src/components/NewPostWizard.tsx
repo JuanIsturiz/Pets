@@ -38,7 +38,7 @@ interface INewPost {
   petId: string;
 }
 const NewPostWizard: FC<{
-  btnRef: MutableRefObject<HTMLButtonElement | null>;
+  btnRef?: MutableRefObject<HTMLButtonElement | null>;
 }> = ({ btnRef }) => {
   const { data: session } = useSession();
   const toast = useToast();
@@ -56,7 +56,9 @@ const NewPostWizard: FC<{
     api.post.create.useMutation({
       async onSuccess() {
         await ctx.post.getAll.invalidate();
-        void onClose();
+        await ctx.post.getOwn.invalidate();
+        await ctx.post.getAllInfinite.invalidate();
+        handleClose();
         toast({
           title: "Post created successfully!",
           status: "success",
@@ -98,6 +100,15 @@ const NewPostWizard: FC<{
     }
   };
 
+  const handleClose = () => {
+    setTitle("");
+    setDescription("");
+    setTags([]);
+    setBaseImage("");
+    setPetId("");
+    onClose();
+  };
+
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setPetId(e.target.value);
 
@@ -128,15 +139,7 @@ const NewPostWizard: FC<{
       >
         <MdOutlineAddBox size={42} />
       </Button>
-      <Modal
-        isOpen={isOpen}
-        onClose={() => {
-          onClose();
-          setTags([]);
-          setBaseImage(null);
-        }}
-        scrollBehavior={"outside"}
-      >
+      <Modal isOpen={isOpen} onClose={handleClose} scrollBehavior={"outside"}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>New Post</ModalHeader>

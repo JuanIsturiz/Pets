@@ -21,7 +21,7 @@ const TagInput: React.FC<TagInputProps> = ({ tags, onDelete, onAdd }) => {
     if (e.key !== "Enter") return;
     const purged = value
       .trim()
-      .replace(" ", "_")
+      .replaceAll(" ", "_")
       .replaceAll("#", "")
       .replaceAll("~", "");
     if (!purged) return;

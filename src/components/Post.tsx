@@ -38,12 +38,27 @@ import { FiShare } from "react-icons/fi";
 import EditPostModal from "./EditPostModal";
 import DeleteItemButton, { ToDelete } from "./DeleteItemButton";
 import { InfoOutlineIcon } from "@chakra-ui/icons";
+import { FaPaw } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
 
 type Post = RouterOutputs["post"]["getAll"][number];
 
-const Post: React.FC<{ post: Post }> = ({ post }) => {
+type Location =
+  | "getAllInfinite"
+  | "getOwn"
+  | "getByTags"
+  | "getByUsername"
+  | "getByUserId"
+  | "getById"
+  | "getAll";
+
+const Post: React.FC<{ post: Post; location: Location; tag?: string }> = ({
+  post,
+  location,
+  tag,
+}) => {
   const {
     id,
     title,
@@ -54,12 +69,14 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     createdAt,
     likedBy,
     authorId,
+    petId,
+    pet: { name: petName },
   } = post;
 
   const toast = useToast();
   const { onClose } = useDisclosure();
   const { data: session } = useSession();
-
+  const { pathname } = useRouter();
   const ctx = api.useContext();
 
   const {
@@ -78,24 +95,137 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     api.post.like.useMutation({
       async onMutate() {
         if (!session?.user) return;
-        await ctx.post.getAll.cancel();
-        const previousPosts = ctx.post.getAll.getData();
-        ctx.post.getAll.setData(undefined, (old) => {
-          return old?.map((p) =>
-            p.id === id
-              ? {
-                  ...p,
-                  likedBy: isLiked
-                    ? likedBy.filter((u) => u.id !== session.user.id)
-                    : [...likedBy, session.user],
-                }
-              : p
-          );
-        });
-        return { previousPosts };
+        switch (location) {
+          case "getAll":
+            await ctx.post.getAll.cancel();
+            const previousAllPosts = ctx.post["getAll"].getData();
+            ctx.post["getAll"].setData(undefined, (old) => {
+              return old?.map((p) =>
+                p.id === id
+                  ? {
+                      ...p,
+                      likedBy: isLiked
+                        ? likedBy.filter((u) => u.id !== session.user.id)
+                        : [...likedBy, session.user],
+                    }
+                  : p
+              );
+            });
+            return { previousPosts: previousAllPosts };
+          case "getAllInfinite":
+            await ctx.post.getAllInfinite.cancel({});
+            const previousAllInfinite = ctx.post[
+              "getAllInfinite"
+            ].getInfiniteData({});
+            ctx.post["getAllInfinite"].setInfiniteData({}, (old) => {
+              if (!old) {
+                return {
+                  pages: [],
+                  pageParams: [],
+                };
+              }
+              return {
+                ...old,
+                pages: old.pages.map((page) => {
+                  if (!page) return;
+                  return {
+                    ...page,
+                    posts: page.posts.map((post) => {
+                      if (post.id === id) {
+                        return {
+                          ...post,
+                          likedBy: isLiked
+                            ? likedBy.filter((u) => u.id !== session.user.id)
+                            : [...likedBy, session.user],
+                        };
+                      }
+                      return post;
+                    }),
+                  };
+                }),
+              };
+            });
+            return { previousPosts: previousAllInfinite };
+          case "getByTags":
+            await ctx.post.getByTags.cancel({ tag: tag ?? "" });
+            const previousByTags = ctx.post["getByTags"].getData({
+              tag: tag ?? "",
+            });
+            ctx.post["getByTags"].setData({ tag: tag ?? "" }, (old) => {
+              return old?.map((p) =>
+                p.id === id
+                  ? {
+                      ...p,
+                      likedBy: isLiked
+                        ? likedBy.filter((u) => u.id !== session.user.id)
+                        : [...likedBy, session.user],
+                    }
+                  : p
+              );
+            });
+            return { previousPosts: previousByTags };
+          case "getOwn":
+            await ctx.post.getOwn.cancel();
+            const previousOwnPosts = ctx.post["getOwn"].getData();
+            ctx.post[location].setData(undefined, (old) => {
+              return old?.map((p) =>
+                p.id === id
+                  ? {
+                      ...p,
+                      likedBy: isLiked
+                        ? likedBy.filter((u) => u.id !== session.user.id)
+                        : [...likedBy, session.user],
+                    }
+                  : p
+              );
+            });
+            return { previousPosts: previousOwnPosts };
+          case "getByUserId":
+            await ctx.post.getByUserId.cancel({ userId: authorId });
+            const previousByUserIdPosts = ctx.post["getByUserId"].getData({
+              userId: authorId,
+            });
+            ctx.post["getByUserId"].setData({ userId: authorId }, (old) => {
+              return old?.map((p) =>
+                p.id === id
+                  ? {
+                      ...p,
+                      likedBy: isLiked
+                        ? likedBy.filter((u) => u.id !== session.user.id)
+                        : [...likedBy, session.user],
+                    }
+                  : p
+              );
+            });
+            return { previousPosts: previousByUserIdPosts };
+          case "getByUsername":
+            await ctx.post.getByUsername.cancel({
+              username: author?.name ?? "",
+            });
+            const previousByUsername = ctx.post["getByUsername"].getData({
+              username: author?.name ?? "",
+            });
+            ctx.post["getByUsername"].setData(
+              { username: author?.name ?? "" },
+              (old) => {
+                return old?.map((p) =>
+                  p.id === id
+                    ? {
+                        ...p,
+                        likedBy: isLiked
+                          ? likedBy.filter((u) => u.id !== session.user.id)
+                          : [...likedBy, session.user],
+                      }
+                    : p
+                );
+              }
+            );
+            return { previousPosts: previousByUsername };
+        }
       },
-      onError(err, _newPosts, context) {
-        ctx.post.getAll.setData(undefined, context?.previousPosts);
+      async onError(err, _newPosts, _context) {
+        if (!location) return;
+        await ctx.post[location].invalidate();
         toast({
           status: "error",
           title: err.message,
@@ -107,7 +237,12 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
     api.post.remove.useMutation({
       async onSuccess() {
         await ctx.post.getAll.invalidate();
+        await ctx.post.getAllInfinite.invalidate({});
+        await ctx.post.getByTags.invalidate({ tag: tag ?? "" });
         await ctx.post.getByUserId.invalidate({ userId: session?.user.id });
+        await ctx.post.getByUsername.invalidate({
+          username: author?.name ?? "",
+        });
         await ctx.post.getOwn.invalidate();
         onClose();
       },
@@ -130,7 +265,14 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
   };
 
   const handleLike = () => {
-    //todo add alert to signin
+    if (!session) {
+      toast({
+        title: "Please Sign In first!",
+        status: "warning",
+        duration: 2000,
+      });
+      return;
+    }
     if (loadingLike) return;
     likePost({
       postId: id,
@@ -216,12 +358,14 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
                     </Link>
                     {authorId === session?.user.id && (
                       <>
-                        <EditPostModal
-                          postId={id}
-                          postTitle={title}
-                          postDescription={description ?? ""}
-                          postTags={tags?.split("~")}
-                        />
+                        {pathname === "/profile" && (
+                          <EditPostModal
+                            postId={id}
+                            postTitle={title}
+                            postDescription={description ?? ""}
+                            postTags={tags?.split("~")}
+                          />
+                        )}
                         <DeleteItemButton
                           onDelete={handleDelete}
                           loading={loadingDelete}
@@ -250,17 +394,25 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
             onDoubleClick={handleLike}
             cursor={"pointer"}
           />
-          <HStack>
-            <Icon
-              as={isLiked ? AiFillHeart : AiOutlineHeart}
-              boxSize={6}
-              color={isLiked ? "red.400" : "gray.200"}
-              onClick={handleLike}
-              cursor={"pointer"}
-            />
-            <Text fontSize={"lg"}>{likedBy.length} likes</Text>
+          <HStack justify={"space-between"}>
+            <HStack>
+              <Icon
+                as={isLiked ? AiFillHeart : AiOutlineHeart}
+                boxSize={6}
+                color={isLiked ? "red.400" : "gray.200"}
+                onClick={handleLike}
+                cursor={"pointer"}
+              />
+              <Text fontSize={"lg"}>{likedBy.length} likes</Text>
+            </HStack>
+            <Link as={NextLink} href={`/pet/${petId}`} target={"_blank"}>
+              <HStack spacing={1} align={"center"}>
+                <Icon as={FaPaw} />
+                <Text fontWeight={"semibold"}>{petName.toUpperCase()}</Text>
+              </HStack>
+            </Link>
           </HStack>
-          <HStack>
+          <Text fontSize={"lg"}>
             <Link
               href={`/@${author.name ?? ""}`}
               as={NextLink}
@@ -268,9 +420,9 @@ const Post: React.FC<{ post: Post }> = ({ post }) => {
               fontWeight={"semibold"}
             >
               {author.name}
-            </Link>
-            <Text fontSize={"lg"}>{title}</Text>
-          </HStack>
+            </Link>{" "}
+            {title}
+          </Text>
           <Text mb={2}>{description}</Text>
           <HStack mb={2}>
             {tags?.split("~").map((tag, idx) => (

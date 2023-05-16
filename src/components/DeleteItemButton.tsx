@@ -6,7 +6,6 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalFooter,
-  ModalHeader,
   ModalOverlay,
   Spinner,
   type useDisclosure,

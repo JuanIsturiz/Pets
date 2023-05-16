@@ -87,7 +87,11 @@ const Search: NextPage<{ query: string; option: string }> = ({
                 postsByUsername?.length ? (
                   <>
                     {postsByUsername?.map((post) => (
-                      <Post key={post.id} post={post} />
+                      <Post
+                        key={post.id}
+                        post={post}
+                        location="getByUsername"
+                      />
                     ))}
                   </>
                 ) : null}
@@ -116,7 +120,14 @@ const Search: NextPage<{ query: string; option: string }> = ({
                 {option === "tag" && !loadingPostByTag && postsByTag?.length ? (
                   <>
                     {postsByTag?.map((post) => (
-                      <Post key={post.id} post={post} />
+                      <Post
+                        key={post.id}
+                        post={post}
+                        location="getByTags"
+                        tag={debounceValue
+                          .replaceAll("@", "")
+                          .replaceAll("#", "")}
+                      />
                     ))}
                   </>
                 ) : null}

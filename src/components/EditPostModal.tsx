@@ -42,7 +42,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
 
   const ctx = api.useContext();
   const { mutate: updatePost, isLoading } = api.post.update.useMutation({
-    onSuccess() {
+    async onSuccess() {
       onClose();
       toast({
         status: "success",
@@ -50,10 +50,9 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       });
     },
     async onMutate() {
-      await ctx.post.getAll.cancel();
       await ctx.post.getOwn.cancel();
-      const previousPosts = ctx.post.getAll.getData();
-      ctx.post.getAll.setData(undefined, (old) => {
+      const previousPosts = ctx.post.getOwn.getData();
+      ctx.post.getOwn.setData(undefined, (old) => {
         return old?.map((p) =>
           p.id === postId
             ? { ...p, title, description, tags: tags.join("~") }
@@ -63,7 +62,6 @@ const EditPostModal: React.FC<EditPostModalProps> = ({
       return { previousPosts };
     },
     onError(err, _newPosts, context) {
-      ctx.post.getAll.setData(undefined, context?.previousPosts);
       ctx.post.getOwn.setData(undefined, context?.previousPosts);
       toast({
         status: "error",

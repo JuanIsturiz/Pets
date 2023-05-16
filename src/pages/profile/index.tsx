@@ -227,7 +227,7 @@ const Profile: NextPage = () => {
               {!loadingPosts && posts?.length && (
                 <Box>
                   {posts?.map((post) => (
-                    <Post key={post.id} post={post} />
+                    <Post key={post.id} post={post} location="getOwn" />
                   ))}
                   <Center gap={2}>
                     <Text

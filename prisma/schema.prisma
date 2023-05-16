@@ -105,6 +105,7 @@ model Post {
     comments    Comment[]
     likedBy     User[]
 
+    @@unique([createdAt, id])
     @@index([petId])
     @@index([authorId])
     @@fulltext([tags])

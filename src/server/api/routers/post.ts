@@ -3,6 +3,56 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const postRouter = createTRPCRouter({
+  getAllInfinite: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .nullish(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit = 2, cursor } = input;
+      const posts = await ctx.prisma.post.findMany({
+        take: limit + 1,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        include: {
+          author: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+          likedBy: {
+            select: {
+              id: true,
+            },
+          },
+          pet: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+      let nextCursor: typeof cursor | undefined;
+
+      if (posts.length > limit) {
+        const nextItem = posts.pop();
+        if (!nextItem) return;
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return { posts, nextCursor };
+    }),
   getOwn: publicProcedure.query(async ({ ctx }) => {
     const userId = ctx.session?.user.id;
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -18,6 +68,11 @@ export const postRouter = createTRPCRouter({
         likedBy: {
           select: {
             id: true,
+          },
+        },
+        pet: {
+          select: {
+            name: true,
           },
         },
       },
@@ -38,6 +93,11 @@ export const postRouter = createTRPCRouter({
         likedBy: {
           select: {
             id: true,
+          },
+        },
+        pet: {
+          select: {
+            name: true,
           },
         },
       },
@@ -67,6 +127,11 @@ export const postRouter = createTRPCRouter({
           likedBy: {
             select: {
               id: true,
+            },
+          },
+          pet: {
+            select: {
+              name: true,
             },
           },
         },
@@ -102,6 +167,11 @@ export const postRouter = createTRPCRouter({
               id: true,
             },
           },
+          pet: {
+            select: {
+              name: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
@@ -129,6 +199,11 @@ export const postRouter = createTRPCRouter({
           likedBy: {
             select: {
               id: true,
+            },
+          },
+          pet: {
+            select: {
+              name: true,
             },
           },
         },
@@ -159,6 +234,11 @@ export const postRouter = createTRPCRouter({
           likedBy: {
             select: {
               id: true,
+            },
+          },
+          pet: {
+            select: {
+              name: true,
             },
           },
         },

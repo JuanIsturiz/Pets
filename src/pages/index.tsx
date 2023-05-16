@@ -1,7 +1,8 @@
-import { Box, Center, Container, Flex, Text } from "@chakra-ui/react";
+import { Box, Center, Container, Flex, Spinner, Text } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import { useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 import LoadingPost from "~/components/LoadingPost";
 import NewPostWizard from "~/components/NewPostWizard";
 import Post from "~/components/Post";
@@ -9,8 +10,25 @@ import SearchBar from "~/components/SearchBar";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
-  const { data: posts, isLoading } = api.post.getAll.useQuery();
+  const {
+    data: infinitePosts,
+    isLoading: infinitePostsLoading,
+    hasNextPage,
+    fetchNextPage,
+  } = api.post.getAllInfinite.useInfiniteQuery(
+    {},
+    {
+      getNextPageParam(lastPage) {
+        return lastPage?.nextCursor;
+      },
+    }
+  );
+
+  // const { data: posts, isLoading } = api.post.getAll.useQuery();
   const [searchTerm, setSearchTerm] = useState("");
+  const flattenInifinitePosts = infinitePosts?.pages.flatMap(
+    (page) => page?.posts
+  );
 
   return (
     <>
@@ -29,8 +47,35 @@ const Home: NextPage = () => {
           <NewPostWizard />
         </Flex>
         <Container maxW="lg">
-          {isLoading && <LoadingPost quantity={2} />}
-          {!isLoading && posts?.length ? (
+          {/* infinite posts */}
+          {infinitePostsLoading && <LoadingPost quantity={2} />}
+          {flattenInifinitePosts?.length ? (
+            <InfiniteScroll
+              style={{ overflow: "hidden" }}
+              dataLength={flattenInifinitePosts?.length ?? 0}
+              next={fetchNextPage}
+              hasMore={hasNextPage ?? false}
+              loader={
+                <Center>
+                  <Spinner size={"xl"} thickness="4px" color="teal.400" />
+                </Center>
+              }
+            >
+              {flattenInifinitePosts.map(
+                (post) =>
+                  post && (
+                    <Post key={post.id} post={post} location="getAllInfinite" />
+                  )
+              )}
+            </InfiniteScroll>
+          ) : null}
+          {!infinitePostsLoading && !flattenInifinitePosts?.length && (
+            <Center>
+              <Text fontSize={"2xl"}>User has no posts.</Text>
+            </Center>
+          )}
+          {/* old posts */}
+          {/* {!isLoading && posts?.length ? (
             <>
               {posts?.map((post) => (
                 <Post key={post.id} post={post} />
@@ -41,7 +86,7 @@ const Home: NextPage = () => {
             <Center>
               <Text fontSize={"2xl"}>User has no posts.</Text>
             </Center>
-          )}
+          )} */}
         </Container>
       </Box>
     </>
