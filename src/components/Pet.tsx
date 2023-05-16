@@ -49,6 +49,9 @@ const Pet: React.FC<{ pet: Pet }> = ({ pet }) => {
         await ctx.pet.getAll.invalidate();
         await ctx.pet.getByUserId.invalidate({ userId: session?.user.id });
         await ctx.pet.getOwn.invalidate();
+        await ctx.profile.getByUsername.invalidate({
+          username: pet.owner?.name ?? "",
+        });
         onClose();
       },
       onError(err) {

@@ -67,6 +67,8 @@ const Add: NextPage = () => {
     const file = e.target.files[0];
     if (!file) return;
     const base64 = await convertBase64(file);
+
+    console.log(base64);
     setBaseImage(base64 as string);
   };
 
@@ -77,6 +79,7 @@ const Add: NextPage = () => {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log(baseImage);
     if (!baseImage) return;
     const newPet: PetData = {
       name,
@@ -138,9 +141,9 @@ const Add: NextPage = () => {
             required
             onChange={(e) => {
               (() => {
-                async (innerEvent = e) => {
+                void (async (innerEvent = e) => {
                   await uploadImage(innerEvent);
-                };
+                })();
               })();
             }}
             accept="image/*"

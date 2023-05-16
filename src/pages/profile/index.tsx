@@ -175,7 +175,6 @@ const Profile: NextPage = () => {
           </Box>
         </Flex>
       )}
-
       <Tabs defaultIndex={0} colorScheme="teal">
         <TabList>
           <Tab flex={1} onClick={() => setFilter("pet")}>
@@ -188,7 +187,7 @@ const Profile: NextPage = () => {
         <TabPanels>
           <TabPanel>
             {loadingPets && <LoadingPet quantity={2} />}
-            {!loadingPets && pets?.length && (
+            {!loadingPets && pets?.length ? (
               <Box>
                 <Box>
                   {pets.map((pet, idx) => (
@@ -208,7 +207,7 @@ const Profile: NextPage = () => {
                   </NextLink>
                 </Center>
               </Box>
-            )}
+            ) : null}
             {!loadingPets && !pets?.length && (
               <Center>
                 <Text fontSize={"xl"} mt={8}>
@@ -228,7 +227,7 @@ const Profile: NextPage = () => {
           <TabPanel>
             <Container maxW="lg">
               {loadingPosts && <LoadingPost quantity={2} />}
-              {!loadingPosts && posts?.length && (
+              {!loadingPosts && posts?.length ? (
                 <Box>
                   {posts?.map((post, idx) => (
                     <Post key={post.id} post={post} location="getOwn" />
@@ -247,7 +246,7 @@ const Profile: NextPage = () => {
                     <NewPostWizard btnRef={newPostRef} />
                   </Center>
                 </Box>
-              )}
+              ) : null}
               {!loadingPosts && !posts?.length && (
                 <Center flexDirection={"column"}>
                   <Text fontSize={"xl"} fontWeight={"semibold"}>

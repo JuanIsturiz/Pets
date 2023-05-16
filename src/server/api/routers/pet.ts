@@ -8,6 +8,13 @@ export const petRouter = createTRPCRouter({
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
     return await ctx.prisma.pet.findMany({
       where: { ownerId: userId },
+      include: {
+        owner: {
+          select: {
+            name: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -15,6 +22,13 @@ export const petRouter = createTRPCRouter({
   }),
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.pet.findMany({
+      include: {
+        owner: {
+          select: {
+            name: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -29,6 +43,13 @@ export const petRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.prisma.pet.findMany({
         where: { ownerId: input.userId },
+        include: {
+          owner: {
+            select: {
+              name: true,
+            },
+          },
+        },
         orderBy: {
           createdAt: "desc",
         },
