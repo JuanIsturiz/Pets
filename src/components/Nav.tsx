@@ -73,7 +73,7 @@ function LogoutButton() {
   return (
     <>
       <Button colorScheme="teal" rightIcon={<FiLogOut />} onClick={onOpen}>
-        Log Out
+        <Text display={{ base: "none", md: "block" }}>Log Out</Text>
       </Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

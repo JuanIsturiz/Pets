@@ -1,10 +1,11 @@
-import { Box, Spinner, StackItem, Text } from "@chakra-ui/react";
+import { Box, Link, Spinner, StackItem, Text } from "@chakra-ui/react";
 import React from "react";
 import { type RouterOutputs, api } from "~/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useSession } from "next-auth/react";
+import NextLink from "next/link";
 dayjs.extend(relativeTime);
 
 type Comment = RouterOutputs["comment"]["getAll"][number];
@@ -28,7 +29,16 @@ const Comment: React.FC<CommentProps> = ({ comment, onRefetch }) => {
   return (
     <StackItem>
       <Box display={"flex"} gap={2} alignItems={"center"}>
-        <Text>{user.name}</Text>
+        <Link
+          as={NextLink}
+          href={
+            session?.user.name === user.name
+              ? "/profile"
+              : `/@${user.name ?? ""}`
+          }
+        >
+          {user.name}
+        </Link>
         <Text color={"gray.500"}>{dayjs(createdAt).fromNow(true)}</Text>
         {session?.user.id === user.id && !isLoading && (
           <DeleteIcon

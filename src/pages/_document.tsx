@@ -7,7 +7,9 @@ export default class Document extends NextDocument {
   render() {
     return (
       <Html lang="en">
-        <Head />
+        <Head>
+          <link rel="stylesheet" href="nprogress.css" />
+        </Head>
         <body>
           <ColorModeScript initialColorMode={"light"} />
           <Main />

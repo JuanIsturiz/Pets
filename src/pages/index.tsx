@@ -45,7 +45,7 @@ const Home: NextPage = () => {
           />
           <NewPostWizard />
         </Flex>
-        <Container maxW="lg">
+        <Container maxW={"xl"}>
           {/* infinite posts */}
           {infinitePostsLoading && <LoadingPost quantity={2} />}
           {flattenInifinitePosts?.length ? (

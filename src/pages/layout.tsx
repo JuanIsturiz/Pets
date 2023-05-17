@@ -10,7 +10,7 @@ const comicNeue = Comic_Neue({
 
 const Layout: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
-    <Container as="main" maxW={"3xl"} sx={comicNeue.style}>
+    <Container as="main" maxW={{ base: "5xl", md: "3xl" }} sx={comicNeue.style}>
       <Header />
       {children}
     </Container>

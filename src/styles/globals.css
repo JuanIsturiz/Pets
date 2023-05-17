@@ -14,3 +14,11 @@ a {
 * {
   box-sizing: border-box;
 }
+
+#nprogress .peg {
+  box-shadow: 0 0 10px teal, 0 0 5px teal !important;
+}
+
+#nprogress .bar {
+  background: teal !important;
+}

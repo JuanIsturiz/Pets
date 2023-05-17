@@ -299,7 +299,7 @@ const Post: React.FC<{
 
   return (
     <ScaleFade in={true} initialScale={0.9}>
-      <Card mb={4} position={"relative"}>
+      <Card mb={4} position={"relative"} mx={4} shadow={"lg"}>
         <CardHeader pb={0}>
           <HStack spacing={2}>
             <Avatar
@@ -315,7 +315,6 @@ const Post: React.FC<{
                   : `/@${author.name ?? ""}`
               }
               as={NextLink}
-              target="_blank"
             >
               {author.name}
             </Link>
