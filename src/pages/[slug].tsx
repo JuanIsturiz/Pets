@@ -114,7 +114,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
           {loadingPosts && <LoadingPost quantity={2} />}
           {!loadingPosts && posts?.length && (
             <>
-              {posts?.map((post, idx) => (
+              {posts?.map((post) => (
                 <Post key={post.id} post={post} location="getByUserId" />
               ))}
             </>
@@ -131,7 +131,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
           {loadingPets && <LoadingPet quantity={3} />}
           {!loadingPets && pets?.length && (
             <>
-              {pets.map((pet, idx) => (
+              {pets.map((pet) => (
                 <Pet key={pet.id} pet={pet} />
               ))}
             </>

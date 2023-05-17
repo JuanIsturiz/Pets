@@ -1,3 +1,72 @@
+# Pets
+
+Hello again!! Welcome to my prototype of a social media application.
+
+---
+
+Thank you for joining me in my coding journey!!
+
+### Description
+
+A pet social media where users can share their pets making them a profile and upload posts of them. Pets was made with the t3 stack setup, planetscale and chakraUI.
+
+### Setup
+
+1. Run `npm install` so every dependency in the package.json file installs correctly.
+2. Create a .env file and pass the correct information for every key (use sample.env as an example).
+3. Run `npm run dev` to start the application on a local server.
+
+### Dependencies
+
+- @chakra-ui/icons
+- @chakra-ui/react
+- @emotion/react
+- @emotion/styled
+- @fontsource/comic-neue
+- @hookform/resolvers
+- @next-auth/prisma-adapter
+- @prisma/client
+- @t3-oss/env-nextjs
+- @tanstack/react-query
+- @trpc/client
+- @trpc/next
+- @trpc/react-query
+- @trpc/server
+- age2
+- dayjs
+- framer-motion
+- js-base64
+- next
+- next-auth
+- nprogress
+- react
+- react-dom
+- react-dropzone
+- react-icons
+- react-infinite-scroll-component
+- superjson
+- use-debounce
+- zod
+
+### devDependencies
+
+- @types/eslint
+- @types/node
+- @types/react
+- @types/react-dom
+- @typescript-eslint/eslint-plugin
+- @typescript-eslint/parser
+- eslint
+- eslint-config-next
+- prisma
+- typescript
+
+---
+
+### Preview
+
+Click here for a live preview of [Pets](https://pets-juanisturiz.vercel.app/) deployed at Vercel.
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.

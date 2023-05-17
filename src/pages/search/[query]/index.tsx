@@ -86,7 +86,7 @@ const Search: NextPage<{ query: string; option: string }> = ({
                 !loadingPostByUsername &&
                 postsByUsername?.length ? (
                   <>
-                    {postsByUsername?.map((post, idx) => (
+                    {postsByUsername?.map((post) => (
                       <Post
                         key={post.id}
                         post={post}
@@ -119,7 +119,7 @@ const Search: NextPage<{ query: string; option: string }> = ({
                 )}
                 {option === "tag" && !loadingPostByTag && postsByTag?.length ? (
                   <>
-                    {postsByTag?.map((post, idx) => (
+                    {postsByTag?.map((post) => (
                       <Post
                         key={post.id}
                         post={post}

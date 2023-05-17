@@ -190,7 +190,7 @@ const Profile: NextPage = () => {
             {!loadingPets && pets?.length ? (
               <Box>
                 <Box>
-                  {pets.map((pet, idx) => (
+                  {pets.map((pet) => (
                     <Pet key={pet.id} pet={pet} />
                   ))}
                 </Box>
@@ -229,7 +229,7 @@ const Profile: NextPage = () => {
               {loadingPosts && <LoadingPost quantity={2} />}
               {!loadingPosts && posts?.length ? (
                 <Box>
-                  {posts?.map((post, idx) => (
+                  {posts?.map((post) => (
                     <Post key={post.id} post={post} location="getOwn" />
                   ))}
                   <Center gap={2}>
