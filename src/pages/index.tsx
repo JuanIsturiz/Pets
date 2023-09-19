@@ -70,7 +70,7 @@ const Home: NextPage = () => {
           ) : null}
           {!infinitePostsLoading && !flattenInifinitePosts?.length && (
             <Center>
-              <Text fontSize={"2xl"}>User has no posts.</Text>
+              <Text fontSize={"2xl"}>No posts to show at this moment.</Text>
             </Center>
           )}
         </Container>
